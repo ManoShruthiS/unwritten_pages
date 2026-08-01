@@ -169,7 +169,7 @@ export default function App() {
     }
     if (user.role === 'Admin') {
       setCurrentView('admin');
-      setAdminActivePage('dashboard');
+      setAdminActivePage('write');
     } else {
       setCurrentView('reader');
     }
@@ -179,7 +179,7 @@ export default function App() {
   const handleOpenDashboard = () => {
     if (user.role === 'Admin') {
       setCurrentView('admin');
-      setAdminActivePage('dashboard');
+      setAdminActivePage('write');
     } else {
       setCurrentView('reader');
     }
@@ -454,7 +454,7 @@ export default function App() {
   const heroCta = !isAuthenticated
     ? { label: 'Open Library', icon: 'book' }
     : user.role === 'Admin'
-    ? { label: 'Go to Dashboard', icon: 'feather' }
+    ? { label: 'Start writing', icon: 'feather' }
     : { label: 'Enter Library', icon: 'book' };
 
   return (

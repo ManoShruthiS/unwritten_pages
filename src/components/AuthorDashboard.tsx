@@ -5,7 +5,7 @@ import {
   BookOpen, Plus, Edit3, Trash2, BarChart2, Eye, Heart,
   Users, Sparkles, Save, Check, FileText, Image, Tag, Clock,
   Send, MessageSquare, Pencil, Pin, Search, TrendingUp, Star,
-  ArrowRight, Settings, LayoutDashboard, Feather, Bell, Globe,
+  ArrowRight, ArrowLeft, Settings, LayoutDashboard, Feather, Bell, Globe,
   LogOut, ChevronRight, Mail, Zap, Activity, PieChart,
   Layers, HardDrive, Palette, Link, X, Menu, MoreHorizontal,
   BookMarked, BarChart, LineChart, ThumbsUp, UserCheck, Filter,
@@ -37,6 +37,8 @@ interface AuthorDashboardProps {
   onDeleteComment: (commentId: string) => void;
   onClose: () => void;
   onSignOut: () => void;
+  activePage: string;
+  setActivePage: (page: string) => void;
 }
 
 type ActivePage =
@@ -133,13 +135,24 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
   onDeleteComment,
   onClose,
   onSignOut,
-  activePage = 'dashboard',
-  setActivePage = () => {}
+  activePage,
+  setActivePage
 }) => {
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
   const [entriesQuery, setEntriesQuery] = useState('');
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [isVaultModalOpen, setIsVaultModalOpen] = useState(false);
+  const [vaultImages, setVaultImages] = useState<string[]>(
+    Array.from(new Set(diaries.flatMap(d => entries.filter(e => e.diaryId === d.id).map(e => e.coverImage)).filter(Boolean)))
+  );
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  
+  const [draftsList, setDraftsList] = useState([
+    { id: '1', title: 'The Midnight Thoughts', updated: '6h ago', words: 340 },
+    { id: '2', title: 'On Persistence', updated: '2d ago', words: 820 },
+    { id: '3', title: 'Building in the Dark', updated: '1w ago', words: 1240 },
+  ]);
 
   // New Entry Form State
   const [entryDiaryId, setEntryDiaryId] = useState(diaries[0]?.id || '');
@@ -240,6 +253,18 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
         {/* Content area */}
         <div className="flex-1 overflow-y-auto bg-[#0e0b09]">
 
+          {/* Universal Back Button */}
+          {activePage !== 'entries' && (
+            <div className="px-5 pt-5 pb-1 flex items-center">
+              <button
+                onClick={() => setActivePage('entries')}
+                className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-[#8a7a6a] hover:text-[#d4af37] transition-colors cursor-pointer"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                Back to Entries
+              </button>
+            </div>
+          )}
 
 
           {/* ── WRITER'S DESK / WRITE ────────────────────────────── */}
@@ -308,14 +333,34 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-mono text-[#d4af37] mb-1">Cover Image URL</label>
-                    <input
-                      type="text"
-                      value={entryCoverImage}
-                      onChange={e => setEntryCoverImage(e.target.value)}
-                      className="w-full bg-[#110e0b] border border-[#2a1e15] rounded-lg p-2 text-xs text-[#e8e0d5] focus:border-[#d4af37] outline-none"
-                    />
+                    <label className="block text-[10px] font-mono text-[#d4af37] mb-2">Cover Image</label>
+                    <div className="flex items-end gap-3">
+                      {entryCoverImage ? (
+                        <div className="relative w-32 h-20 rounded-lg overflow-hidden border border-[#2a1e15] group">
+                          <img src={entryCoverImage} alt="Cover Preview" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setEntryCoverImage('')}
+                            className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-rose-400 cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-32 h-20 rounded-lg border-2 border-dashed border-[#2a1e15] flex items-center justify-center text-[#5a4a3a]">
+                          <span className="text-[10px]">No image</span>
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setIsVaultModalOpen(true)}
+                        className="px-3 py-2 bg-[#1c1814] border border-[#2a1e15] text-[10px] text-[#d4af37] rounded-lg hover:border-[#d4af37] transition-colors whitespace-nowrap cursor-pointer h-9"
+                      >
+                        Select from Vault
+                      </button>
+                    </div>
                   </div>
+
 
                   <div>
                     <label className="block text-[10px] font-mono text-[#d4af37] mb-1">Content (Markdown)</label>
@@ -722,38 +767,42 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
               <div className="bg-[#16120e] border border-[#2a1e15] rounded-xl p-5">
                 <h2 className="font-cinzel text-sm font-bold text-[#f0e8d8] mb-4 flex items-center gap-2">
                   <Edit3 className="w-4 h-4 text-[#d4af37]" />
-                  Drafts (3)
+                  Drafts ({draftsList.length})
                 </h2>
-                {[
-                  { title: 'The Midnight Thoughts', updated: '6h ago', words: 340 },
-                  { title: 'On Persistence', updated: '2d ago', words: 820 },
-                  { title: 'Building in the Dark', updated: '1w ago', words: 1240 },
-                ].map((draft, i) => (
-                  <div key={i} className="p-3.5 rounded-xl bg-[#110e0b] border border-[#2a1e15] flex items-center justify-between gap-4 mb-2.5">
+                {draftsList.map((draft) => (
+                  <div key={draft.id} className="p-3.5 rounded-xl bg-[#110e0b] border border-[#2a1e15] flex items-center justify-between gap-4 mb-2.5">
                     <div>
                       <h3 className="font-cinzel text-xs font-bold text-[#f0e8d8]">{draft.title}</h3>
                       <p className="text-[10px] text-[#6a5a4a]">Last saved {draft.updated} • {draft.words} words</p>
                     </div>
-                    <div className="flex gap-1.5">
+                    <div className="flex gap-1.5 flex-shrink-0">
                       <button
                         onClick={() => { setEntryTitle(draft.title); setActivePage('write'); }}
                         className="p-2 rounded-lg bg-[#2b1e16] text-[#d4af37] border border-[#d4af37]/20 transition-colors cursor-pointer hover:border-[#d4af37]/50"
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
-                      <button className="p-2 rounded-lg bg-rose-950/30 text-rose-400 transition-colors cursor-pointer hover:bg-rose-950/60">
+                      <button 
+                        onClick={() => setDraftsList(prev => prev.filter(d => d.id !== draft.id))}
+                        className="p-2 rounded-lg bg-rose-950/30 text-rose-400 transition-colors cursor-pointer hover:bg-rose-950/60"
+                      >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
                 ))}
+                {draftsList.length === 0 && (
+                  <p className="text-xs text-[#5a4a3a] italic font-serif-title text-center py-8">
+                    No drafts available.
+                  </p>
+                )}
               </div>
             </div>
           )}
 
           {/* ── MEDIA VAULT ─────────────────────────────────────── */}
           {activePage === 'media' && (
-            <div className="p-5 max-w-4xl">
+            <div className="p-5 w-full">
               <div className="bg-[#16120e] border border-[#2a1e15] rounded-xl p-5">
                 <h2 className="font-cinzel text-sm font-bold text-[#f0e8d8] mb-4 flex items-center gap-2">
                   <HardDrive className="w-4 h-4 text-[#d4af37]" />
@@ -762,17 +811,42 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
                 <div
                   className="border-2 border-dashed border-[#3a2a1a] rounded-xl p-12 text-center hover:border-[#d4af37]/50 transition-colors cursor-pointer mb-5"
                   onDragOver={e => e.preventDefault()}
+                  onClick={() => fileInputRef.current?.click()}
+                  onDrop={e => {
+                    e.preventDefault();
+                    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                      const url = URL.createObjectURL(e.dataTransfer.files[0]);
+                      setVaultImages(prev => [url, ...prev]);
+                    }
+                  }}
                 >
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    className="hidden" 
+                    accept="image/*"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        const url = URL.createObjectURL(e.target.files[0]);
+                        setVaultImages(prev => [url, ...prev]);
+                      }
+                    }}
+                  />
                   <Upload className="w-8 h-8 text-[#5a4a3a] mx-auto mb-3" />
                   <p className="text-xs text-[#6a5a4a]">Drag & drop files here or click to upload</p>
                   <p className="text-[10px] text-[#4a3a2a] mt-1">Images, PDFs, Videos supported</p>
                 </div>
                 <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
-                  {entries.slice(0, 6).map(e => (
-                    <div key={e.id} className="aspect-square rounded-lg overflow-hidden border border-[#2a1e15] relative group">
-                      <img src={e.coverImage} alt={e.title} className="w-full h-full object-cover" />
+                  {vaultImages.map((imgUrl, idx) => (
+                    <div key={idx} className="aspect-square rounded-lg overflow-hidden border border-[#2a1e15] relative group">
+                      <img src={imgUrl} alt={`Vault Image ${idx}`} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Trash2 className="w-4 h-4 text-rose-400" />
+                        <button 
+                          className="cursor-pointer"
+                          onClick={() => setVaultImages(prev => prev.filter(i => i !== imgUrl))}
+                        >
+                          <Trash2 className="w-4 h-4 text-rose-400 hover:text-rose-300" />
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -873,6 +947,57 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
 
         </div>
       </div>
+
+      {/* Media Vault Selection Modal */}
+      {isVaultModalOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-[#16120e] border border-[#2a1e15] rounded-xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[80vh]">
+            <div className="p-4 border-b border-[#2a1e15] flex items-center justify-between">
+              <h3 className="font-cinzel text-lg font-bold text-[#f0e8d8] flex items-center gap-2">
+                <HardDrive className="w-5 h-5 text-[#d4af37]" />
+                Select from Media Vault
+              </h3>
+              <button 
+                onClick={() => setIsVaultModalOpen(false)}
+                className="text-[#6a5a4a] hover:text-[#f0e8d8] cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {vaultImages.map((imgUrl, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setEntryCoverImage(imgUrl);
+                      setIsVaultModalOpen(false);
+                    }}
+                    className={`relative aspect-square rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${
+                      entryCoverImage === imgUrl ? 'border-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.3)]' : 'border-transparent hover:border-[#3a2a1a]'
+                    }`}
+                  >
+                    <img src={imgUrl} alt={`Vault Image ${idx + 1}`} className="w-full h-full object-cover" />
+                    {entryCoverImage === imgUrl && (
+                      <div className="absolute top-2 right-2 w-5 h-5 bg-[#d4af37] rounded-full flex items-center justify-center">
+                        <Check className="w-3 h-3 text-black" />
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+              
+              {vaultImages.length === 0 && (
+                <div className="text-center py-10">
+                  <p className="text-sm text-[#6a5a4a]">Your vault is empty.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
