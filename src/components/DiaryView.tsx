@@ -27,6 +27,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState<'newest' | 'oldest' | 'popular' | 'commented'>('newest');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
 
   // Extract all unique tags across entries in this diary
   const allTags = Array.from(
@@ -48,6 +49,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
                             e.content.toLowerCase().includes(searchQuery.toLowerCase());
       if (!matchesSearch) return false;
       if (selectedTag && !e.tags.includes(selectedTag)) return false;
+      if (selectedSectionId && e.sectionId !== selectedSectionId) return false;
       return true;
     })
     .sort((a, b) => {
@@ -140,6 +142,35 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
 
         </div>
       </div>
+
+      {/* SECTION NAVIGATION TABS */}
+      {diary.sections && diary.sections.length > 0 && (
+        <div className="flex items-center space-x-6 border-b border-[#2d211a] mb-8 pb-1 overflow-x-auto">
+          <button
+            onClick={() => setSelectedSectionId(null)}
+            className={`whitespace-nowrap pb-2 text-sm font-sans-body transition-colors ${
+              selectedSectionId === null
+                ? 'text-[#d4af37] border-b-2 border-[#d4af37] font-bold'
+                : 'text-[#a3978c] hover:text-[#f3efe6]'
+            }`}
+          >
+            All Entries
+          </button>
+          {diary.sections.map(section => (
+            <button
+              key={section.id}
+              onClick={() => setSelectedSectionId(section.id)}
+              className={`whitespace-nowrap pb-2 text-sm font-sans-body transition-colors ${
+                selectedSectionId === section.id
+                  ? 'text-[#d4af37] border-b-2 border-[#d4af37] font-bold'
+                  : 'text-[#a3978c] hover:text-[#f3efe6]'
+              }`}
+            >
+              {section.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* FILTER & SORT TOOLBAR */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-4 border-b border-[#2d211a]">

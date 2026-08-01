@@ -1,14 +1,31 @@
+export type CoverColor = 
+  | '#2b1b17' // Deep Mahogany
+  | '#1c2e3b' // Sapphire Blue
+  | '#1c3b28' // Emerald Forest
+  | '#3b201c' // Rust Chestnut
+  | '#2d1c3b' // Amethyst
+  | '#382a1e' // Warm Walnut
+  | '#1f1f2e' // Onyx Night
+  | '#4a1515' // Crimson Red
+  | '#2d333b'; // Slate Gray
+
+export interface DiarySection {
+  id: string;
+  name: string;
+}
+
 export interface Diary {
   id: string;
   slug: string;
   title: string;
   description: string;
   icon: string;
-  coverColor: string;
+  coverColor: CoverColor | string;
   spineColor: string;
   accentColor: string;
   entryCount: number;
   lastUpdated: string;
+  sections: DiarySection[];
   isPinned?: boolean;
   isFeatured?: boolean;
 }
@@ -16,6 +33,7 @@ export interface Diary {
 export interface JournalEntry {
   id: string;
   diaryId: string;
+  sectionId: string;
   entryNumber: string; // e.g. "Entry 001"
   title: string;
   subtitle: string;

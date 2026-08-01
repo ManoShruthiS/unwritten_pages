@@ -12,15 +12,20 @@ import { NotificationsModal } from './components/NotificationsModal';
 import { NewsletterModal } from './components/NewsletterModal';
 import { RSSModal } from './components/RSSModal';
 import { Footer } from './components/Footer';
+import { AboutView } from './components/AboutView';
+import { ExploreView } from './components/ExploreView';
+import { LoginView } from './components/LoginView';
+import { ReaderDashboard } from './components/ReaderDashboard';
 
 import { Diary, JournalEntry, Comment, UserProfile, NotificationItem } from './types';
 import { INITIAL_DIARIES, INITIAL_ENTRIES, INITIAL_COMMENTS } from './data/initialData';
 
 export default function App() {
   // Navigation & View State
-  const [currentView, setCurrentView] = useState<'landing' | 'library' | 'diary' | 'entry' | 'admin'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'library' | 'explore' | 'about' | 'diary' | 'entry' | 'admin' | 'reader' | 'login'>('landing');
   const [selectedDiary, setSelectedDiary] = useState<Diary | null>(null);
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
+  const [adminActivePage, setAdminActivePage] = useState<string>('entries');
 
   // Data Stores
   const [diaries, setDiaries] = useState<Diary[]>(INITIAL_DIARIES);
@@ -66,6 +71,15 @@ export default function App() {
   });
 
   const [isParchmentMode, setIsParchmentMode] = useState(false);
+
+  // Authentication session (persisted)
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('unwritten_auth') === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   // Modals & Drawers
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -138,10 +152,64 @@ export default function App() {
   }, []);
 
   // Handlers
+  const handleNavigate = (view: 'landing' | 'library' | 'explore' | 'about' | 'login') => {
+    setCurrentView(view);
+    if (view === 'library') {
+      setSelectedDiary(null);
+      setSelectedEntry(null);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleOpenLibrary = () => {
-    setCurrentView('library');
-    setSelectedDiary(null);
-    setSelectedEntry(null);
+    if (!isAuthenticated) {
+      setCurrentView('login');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    if (user.role === 'Admin') {
+      setCurrentView('admin');
+      setAdminActivePage('dashboard');
+    } else {
+      setCurrentView('reader');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleOpenDashboard = () => {
+    if (user.role === 'Admin') {
+      setCurrentView('admin');
+      setAdminActivePage('dashboard');
+    } else {
+      setCurrentView('reader');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSignOut = () => {
+    setIsAuthenticated(false);
+    try {
+      localStorage.removeItem('unwritten_auth');
+    } catch (e) {
+      console.error(e);
+    }
+    setCurrentView('landing');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleLoginSuccess = (loggedInUser: UserProfile) => {
+    setUser(loggedInUser);
+    setIsAuthenticated(true);
+    try {
+      localStorage.setItem('unwritten_auth', 'true');
+    } catch (e) {
+      console.error(e);
+    }
+    if (loggedInUser.role === 'Admin') {
+      setCurrentView('landing'); // Redirect to home page per user request
+    } else {
+      setCurrentView('reader');
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -300,7 +368,8 @@ export default function App() {
           spineColor: '#1a100d',
           accentColor: '#d4af37',
           entryCount: 0,
-          lastUpdated: 'Today'
+          lastUpdated: 'Today',
+          sections: diaryData.sections || []
         };
         setDiaries(prev => [...prev, fallbackDiary]);
       });
@@ -328,6 +397,7 @@ export default function App() {
         const fallbackEntry: JournalEntry = {
           id: `entry-${Date.now()}`,
           diaryId: entryData.diaryId || diaries[0]?.id,
+          sectionId: entryData.sectionId || '',
           entryNumber: `Entry ${String(entries.length + 1).padStart(3, '0')}`,
           title: entryData.title || 'New Reflection',
           subtitle: entryData.subtitle || '',
@@ -351,6 +421,28 @@ export default function App() {
     setEntries(prev => prev.filter(e => e.id !== entryId));
   };
 
+  const handleUpdateEntry = (entryId: string, entryData: Partial<JournalEntry>) => {
+    fetch(`/api/entries/${entryId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entryData)
+    }).catch(() => {});
+    setEntries(prev => prev.map(e => (e.id === entryId ? { ...e, ...entryData } : e)));
+  };
+
+  const handleTogglePinDiary = (diaryId: string) => {
+    setDiaries(prev => prev.map(d => {
+      if (d.id !== diaryId) return d;
+      const nextPin = !d.isPinned;
+      fetch(`/api/diaries/${diaryId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isPinned: nextPin })
+      }).catch(() => {});
+      return { ...d, isPinned: nextPin };
+    }));
+  };
+
   const handleDeleteComment = (commentId: string) => {
     fetch(`/api/comments/${commentId}`, { method: 'DELETE' }).catch(() => {});
     setComments(prev => prev.filter(c => c.id !== commentId));
@@ -359,40 +451,72 @@ export default function App() {
   const bookmarkedEntries = entries.filter(e => user.bookmarks.includes(e.id));
   const unreadNotifications = notifications.filter(n => !n.read).length;
 
+  const heroCta = !isAuthenticated
+    ? { label: 'Open Library', icon: 'book' }
+    : user.role === 'Admin'
+    ? { label: 'Go to Dashboard', icon: 'feather' }
+    : { label: 'Enter Library', icon: 'book' };
+
   return (
     <div className={`min-h-screen flex flex-col font-sans-body transition-colors duration-300 ${isParchmentMode ? 'page-parchment' : 'bg-[#0d0d0d] text-[#e5e5e5]'}`}>
       
-      {/* Sticky Header */}
-      <Header
-        onOpenLibrary={handleOpenLibrary}
-        onOpenSearch={() => setIsSearchOpen(true)}
-        onOpenBookmarks={() => setIsBookmarksOpen(true)}
-        onOpenNotifications={() => setIsNotificationsOpen(true)}
-        onOpenAdmin={() => setCurrentView('admin')}
-        onRandomEntry={handleRandomEntry}
-        user={user}
-        onToggleFollow={handleToggleFollow}
-        unreadNotifications={unreadNotifications}
-        isParchmentMode={isParchmentMode}
-        onToggleParchment={() => setIsParchmentMode(!isParchmentMode)}
-        currentView={currentView}
-      />
+      {/* Header — overlays hero on landing, sticky on other pages. */}
+      {currentView !== 'landing' && currentView !== 'login' && (
+        <div className="sticky top-0 z-50 bg-[#0d0d0d]/95 backdrop-blur-md border-b border-[#2d1f14]">
+          <Header
+            onNavigate={handleNavigate}
+            onAdminNavigate={(page) => {
+              setCurrentView('admin');
+              setAdminActivePage(page);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onOpenSearch={() => setIsSearchOpen(true)}
+            onOpenBookmarks={() => setIsBookmarksOpen(true)}
+            onOpenDashboard={handleOpenDashboard}
+            onSignOut={handleSignOut}
+            user={user}
+            isAuthenticated={isAuthenticated}
+            currentView={currentView}
+            adminActivePage={adminActivePage}
+          />
+        </div>
+      )}
 
       {/* Main View Transition Stage */}
       <main className="flex-1">
         <AnimatePresence mode="wait">
           
           {currentView === 'landing' && (
-            <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative">
+              {/* Header overlays the hero section */}
+              <div className="absolute top-0 left-0 right-0 z-50">
+                <Header
+                  onNavigate={handleNavigate}
+                  onAdminNavigate={(page) => {
+                    setCurrentView('admin');
+                    setAdminActivePage(page);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  onOpenSearch={() => setIsSearchOpen(true)}
+                  onOpenBookmarks={() => setIsBookmarksOpen(true)}
+                  onOpenDashboard={handleOpenDashboard}
+                  onSignOut={handleSignOut}
+                  user={user}
+                  isAuthenticated={isAuthenticated}
+                  currentView={currentView}
+                  adminActivePage={adminActivePage}
+                />
+              </div>
               <HeroLanding
                 onOpenLibrary={handleOpenLibrary}
+                ctaLabel={heroCta.label}
+                ctaIcon={heroCta.icon}
+                onSelectDiary={handleSelectDiary}
+                onSelectEntry={handleSelectEntry}
+                diaries={diaries}
+                entries={entries}
                 totalDiariesCount={diaries.length}
                 totalEntriesCount={entries.length}
-              />
-              <LibraryShelves
-                diaries={diaries}
-                onSelectDiary={handleSelectDiary}
-                onOpenAdmin={() => setCurrentView('admin')}
               />
             </motion.div>
           )}
@@ -403,7 +527,36 @@ export default function App() {
                 diaries={diaries}
                 onSelectDiary={handleSelectDiary}
                 onOpenAdmin={() => setCurrentView('admin')}
+                canManage={isAuthenticated && user.role === 'Admin'}
               />
+            </motion.div>
+          )}
+
+          {currentView === 'reader' && (
+            <motion.div key="reader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <ReaderDashboard
+                user={user}
+                diaries={diaries}
+                onSelectDiary={handleSelectDiary}
+                onOpenBookmarks={() => setIsBookmarksOpen(true)}
+              />
+            </motion.div>
+          )}
+
+          {currentView === 'explore' && (
+            <motion.div key="explore" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <ExploreView 
+                diaries={diaries}
+                entries={entries}
+                onSelectDiary={handleSelectDiary}
+                onSelectEntry={handleSelectEntry}
+              />
+            </motion.div>
+          )}
+
+          {currentView === 'about' && (
+            <motion.div key="about" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <AboutView />
             </motion.div>
           )}
 
@@ -413,7 +566,7 @@ export default function App() {
                 diary={selectedDiary}
                 entries={entries.filter(e => e.diaryId === selectedDiary.id)}
                 onSelectEntry={handleSelectEntry}
-                onBackToLibrary={handleOpenLibrary}
+                onBackToLibrary={() => handleNavigate('library')}
                 onBookmarkEntry={handleBookmarkEntry}
                 bookmarkedIds={user.bookmarks}
               />
@@ -439,6 +592,7 @@ export default function App() {
             </motion.div>
           )}
 
+
           {currentView === 'admin' && (
             <motion.div key="admin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <AuthorDashboard
@@ -446,12 +600,26 @@ export default function App() {
                 entries={entries}
                 comments={comments}
                 stats={stats}
+                authorName={user.name}
+                activePage={adminActivePage as any}
+                setActivePage={(page) => setAdminActivePage(page)}
                 onCreateDiary={handleCreateDiary}
                 onDeleteDiary={handleDeleteDiary}
                 onCreateEntry={handleCreateEntry}
+                onUpdateEntry={handleUpdateEntry}
+                onTogglePinDiary={handleTogglePinDiary}
                 onDeleteEntry={handleDeleteEntry}
                 onDeleteComment={handleDeleteComment}
                 onClose={() => setCurrentView('library')}
+                onSignOut={handleSignOut}
+              />
+            </motion.div>
+          )}
+          {currentView === 'login' && (
+            <motion.div key="login" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <LoginView
+                onLoginSuccess={handleLoginSuccess}
+                onBackToHome={() => setCurrentView('landing')}
               />
             </motion.div>
           )}
@@ -459,12 +627,7 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      {/* Footer */}
-      <Footer
-        onOpenNewsletter={() => setIsNewsletterOpen(true)}
-        onOpenRSS={() => setIsRssOpen(true)}
-        onOpenAdmin={() => setCurrentView('admin')}
-      />
+
 
       {/* Global Modals & Drawers */}
       <SearchModal

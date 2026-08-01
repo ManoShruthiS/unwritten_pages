@@ -1,161 +1,235 @@
-import React from 'react';
-import { BookOpen, Search, Bookmark, Bell, Sparkles, Feather, Flame, Shuffle, UserCheck, UserPlus } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Search, User, Feather, LogOut, ChevronDown } from 'lucide-react';
 import { UserProfile } from '../types';
 
 interface HeaderProps {
-  onOpenLibrary: () => void;
+  onNavigate: (view: 'landing' | 'library' | 'explore' | 'about' | 'login') => void;
+  onAdminNavigate?: (page: string) => void;
   onOpenSearch: () => void;
   onOpenBookmarks: () => void;
-  onOpenNotifications: () => void;
-  onOpenAdmin: () => void;
-  onRandomEntry: () => void;
+  onOpenDashboard: () => void;
+  onSignOut: () => void;
   user: UserProfile;
-  onToggleFollow: () => void;
-  unreadNotifications: number;
-  isParchmentMode: boolean;
-  onToggleParchment: () => void;
+  isAuthenticated: boolean;
   currentView: string;
+  adminActivePage?: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  onOpenLibrary,
+  onNavigate,
+  onAdminNavigate,
   onOpenSearch,
   onOpenBookmarks,
-  onOpenNotifications,
-  onOpenAdmin,
-  onRandomEntry,
+  onOpenDashboard,
+  onSignOut,
   user,
-  onToggleFollow,
-  unreadNotifications,
-  isParchmentMode,
-  onToggleParchment,
-  currentView
+  isAuthenticated,
+  currentView,
+  adminActivePage
 }) => {
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const navRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const standardNavItems = [
+    { label: 'Home', view: 'landing' as const },
+    { label: 'Library', view: 'library' as const },
+    { label: 'Explore', view: 'explore' as const },
+    { label: 'About', view: 'about' as const },
+  ];
+
+  const adminNavGroups = [
+    {
+      label: 'Write',
+      items: [
+        { label: 'Drafts', page: 'drafts' },
+        { label: 'Media Vault', page: 'media' },
+      ]
+    },
+    {
+      label: 'Manage',
+      items: [
+        { label: 'Library', page: 'library' },
+        { label: 'Entries', page: 'entries' },
+      ]
+    },
+    {
+      label: 'Community',
+      items: [
+        { label: 'Comments', page: 'comments' },
+        { label: 'Readers', page: 'readers' },
+        { label: 'Newsletter', page: 'newsletter' },
+      ]
+    },
+    {
+      label: 'Insights',
+      items: [
+        { label: 'Analytics', page: 'analytics' },
+        { label: 'Statistics', page: 'statistics' },
+      ]
+    },
+    {
+      label: 'Config',
+      items: [
+        { label: 'Settings', page: 'settings' },
+        { label: 'Appearance', page: 'appearance' },
+        { label: 'Integrations', page: 'integrations' },
+      ]
+    }
+  ];
+
   return (
-    <header className="sticky top-0 z-40 backdrop-blur-md bg-[#121013]/90 border-b border-[#2d221c] transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        
-        {/* Brand Logo & Author Tag */}
-        <div className="flex items-center space-x-3 cursor-pointer group" onClick={onOpenLibrary}>
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#2a1e17] to-[#121013] border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] shadow-inner group-hover:border-[#d4af37] transition-all">
-            <Feather className="w-5 h-5 group-hover:scale-110 transition-transform" />
-          </div>
-          <div>
-            <span className="font-cinzel text-lg sm:text-xl font-bold tracking-wider text-[#f3efe6] group-hover:text-[#d4af37] transition-colors">
-              The Unwritten Pages
-            </span>
-            <div className="flex items-center space-x-2 text-xs text-[#a3978c] font-sans-body">
-              <span>by Mahi 🦢</span>
-              <span className="text-[#d4af37]/60">•</span>
-              <span className="hidden sm:inline italic font-serif-title text-[#d4af37]/90">Thoughts Nobody Ordered.</span>
-            </div>
-          </div>
+    <header className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-6 sm:px-10 h-16">
+      
+      {/* Left: Logo + Brand */}
+      <div
+        className="flex items-center gap-2.5 cursor-pointer group flex-shrink-0"
+        onClick={() => onNavigate('landing')}
+      >
+        <div className="w-8 h-8 flex items-center justify-center">
+          <Feather className="w-5 h-5 text-[#d4af37] group-hover:scale-110 transition-transform" />
         </div>
+        <span
+          className="text-[#f3efe6] text-sm font-semibold tracking-wide group-hover:text-[#d4af37] transition-colors hidden sm:block"
+          style={{ fontFamily: "'Georgia', serif" }}
+        >
+          The Unwritten Pages
+        </span>
+      </div>
 
-        {/* Center/Right Action Bar */}
-        <div className="flex items-center space-x-1 sm:space-x-2">
-          
-          {/* Reading Streak Badge */}
-          <div className="hidden lg:flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#1e1713] border border-[#3d2f25] text-xs text-[#e5c158]">
-            <Flame className="w-3.5 h-3.5 text-amber-500 fill-amber-500 animate-pulse" />
-            <span className="font-mono font-medium">{user.readingStreak} Day Streak</span>
+      {/* Center: Nav Links */}
+      <nav ref={navRef} className="flex items-center gap-6 sm:gap-8">
+        {isAuthenticated && user.role === 'Admin' ? (
+          // Admin Dropdown Navigation
+          <div className="flex items-center gap-6">
+            <button
+              onClick={() => onNavigate('landing')}
+              className={`text-sm font-sans transition-colors relative ${
+                currentView === 'landing'
+                  ? 'text-[#f3efe6] font-semibold after:content-[""] after:absolute after:bottom-[-4px] after:left-0 after:right-0 after:h-[1px] after:bg-[#d4af37]'
+                  : 'text-[#8c8075] hover:text-[#c5b8ab]'
+              }`}
+            >
+              Home
+            </button>
+            {adminNavGroups.map((group) => (
+              <div key={group.label} className="relative">
+                <button
+                  onClick={() => setOpenDropdown(openDropdown === group.label ? null : group.label)}
+                  className={`flex items-center gap-1 text-sm font-sans transition-colors ${
+                    openDropdown === group.label || (currentView === 'admin' && group.items.some(i => i.page === adminActivePage))
+                      ? 'text-[#f3efe6]'
+                      : 'text-[#8c8075] hover:text-[#c5b8ab]'
+                  }`}
+                >
+                  {group.label}
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+                {openDropdown === group.label && (
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-40 bg-[#16120f] border border-[#2d1f14] rounded-lg shadow-xl overflow-hidden py-1 z-50">
+                    {group.items.map((item) => (
+                      <button
+                        key={item.page}
+                        onClick={() => {
+                          if (onAdminNavigate) onAdminNavigate(item.page);
+                          setOpenDropdown(null);
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                          currentView === 'admin' && adminActivePage === item.page
+                            ? 'bg-[#2a1f18] text-[#d4af37]'
+                            : 'text-[#8c8075] hover:bg-[#201712] hover:text-[#f3efe6]'
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-
-          {/* Random Entry Button */}
-          <button
-            onClick={onRandomEntry}
-            title="Surprise me with a random entry"
-            className="p-2 rounded-lg text-[#c5b8ab] hover:text-[#d4af37] hover:bg-[#1a1411] transition-all flex items-center space-x-1 text-xs"
-          >
-            <Shuffle className="w-4 h-4" />
-            <span className="hidden md:inline font-sans-body">Random Page</span>
-          </button>
-
-          {/* Search Button */}
-          <button
-            onClick={onOpenSearch}
-            className="p-2 rounded-lg text-[#c5b8ab] hover:text-[#d4af37] hover:bg-[#1a1411] transition-all flex items-center space-x-1.5 text-xs"
-          >
-            <Search className="w-4 h-4" />
-            <span className="hidden sm:inline font-sans-body text-xs bg-[#231b16] px-1.5 py-0.5 rounded border border-[#3a2d24] text-[#a3978c]">⌘K</span>
-          </button>
-
-          {/* Bookmarks Drawer Trigger */}
+        ) : (
+          // Standard Reader Navigation
+          standardNavItems.map(item => (
+            <button
+              key={item.view}
+              onClick={() => onNavigate(item.view)}
+              className={`text-sm font-sans transition-colors relative ${
+                currentView === item.view
+                  ? 'text-[#f3efe6] font-semibold after:content-[""] after:absolute after:bottom-[-4px] after:left-0 after:right-0 after:h-[1px] after:bg-[#d4af37]'
+                  : 'text-[#8c8075] hover:text-[#c5b8ab]'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))
+        )}
+        
+        {/* Bookmarks (Readers Only) */}
+        {(!isAuthenticated || user.role !== 'Admin') && (
           <button
             onClick={onOpenBookmarks}
-            title="Saved bookmarks"
-            className="p-2 rounded-lg text-[#c5b8ab] hover:text-[#d4af37] hover:bg-[#1a1411] transition-all relative"
+            className="text-sm font-sans text-[#8c8075] hover:text-[#c5b8ab] transition-colors"
           >
-            <Bookmark className="w-4 h-4" />
-            {user.bookmarks.length > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#d4af37] text-[#121013] font-mono text-[10px] font-bold rounded-full flex items-center justify-center">
-                {user.bookmarks.length}
+            Bookmarks
+          </button>
+        )}
+      </nav>
+
+      {/* Right: Search + Sign In */}
+      <div className="flex items-center gap-4 sm:gap-5 flex-shrink-0">
+        <button
+          onClick={onOpenSearch}
+          className="flex items-center gap-1.5 text-[#8c8075] hover:text-[#c5b8ab] transition-colors text-sm font-sans"
+        >
+          <Search className="w-4 h-4" />
+          <span className="hidden sm:inline">Search</span>
+        </button>
+
+        <div className="w-px h-4 bg-[#3d2b1e]" />
+
+        {!isAuthenticated ? (
+          <button
+            onClick={() => onNavigate('login')}
+            className="flex items-center gap-1.5 text-[#8c8075] hover:text-[#c5b8ab] transition-colors text-sm font-sans cursor-pointer"
+          >
+            <User className="w-4 h-4" />
+            <span className="hidden sm:inline">Sign In</span>
+          </button>
+        ) : (
+          <>
+            <button
+              onClick={onOpenDashboard}
+              className="flex items-center gap-1.5 text-[#c5b8ab] hover:text-[#d4af37] transition-colors text-sm font-sans cursor-pointer group"
+              title={user.role === 'Admin' ? 'Author Dashboard' : 'Reader Dashboard'}
+            >
+              <span className="w-6 h-6 rounded-full overflow-hidden border border-[#d4af37]/40 flex items-center justify-center bg-[#1e1713]">
+                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
               </span>
-            )}
-          </button>
-
-          {/* Notifications Trigger */}
-          <button
-            onClick={onOpenNotifications}
-            title="Library Dispatches & Updates"
-            className="p-2 rounded-lg text-[#c5b8ab] hover:text-[#d4af37] hover:bg-[#1a1411] transition-all relative"
-          >
-            <Bell className="w-4 h-4" />
-            {unreadNotifications > 0 && (
-              <span className="absolute top-1 right-1 w-2 h-2 bg-emerald-500 rounded-full ring-2 ring-[#121013]" />
-            )}
-          </button>
-
-          {/* Parchment Mode Toggle */}
-          <button
-            onClick={onToggleParchment}
-            title={isParchmentMode ? "Switch to Dark Library Mode" : "Switch to Warm Parchment Mode"}
-            className={`p-2 rounded-lg text-xs font-sans-body transition-all flex items-center space-x-1 border ${
-              isParchmentMode
-                ? 'bg-[#fcf9f2] text-[#2b1b17] border-[#d4af37]'
-                : 'bg-[#1e1713] text-[#c5b8ab] border-[#382b22] hover:text-[#d4af37]'
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5 text-[#d4af37]" />
-            <span className="hidden xl:inline">{isParchmentMode ? 'Dark Library' : 'Warm Parchment'}</span>
-          </button>
-
-          {/* Follow Author Button */}
-          <button
-            onClick={onToggleFollow}
-            className={`px-3 py-1.5 rounded-md text-xs font-sans-body font-medium transition-all flex items-center space-x-1.5 border ${
-              user.followingAuthor
-                ? 'bg-[#1c3b28]/60 text-emerald-300 border-emerald-600/40'
-                : 'bg-[#2b1e16] text-[#e5c158] border-[#d4af37]/40 hover:bg-[#38281d] hover:border-[#d4af37]'
-            }`}
-          >
-            {user.followingAuthor ? (
-              <>
-                <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Following Mahi</span>
-              </>
-            ) : (
-              <>
-                <UserPlus className="w-3.5 h-3.5" />
-                <span>Follow Mahi 🦢</span>
-              </>
-            )}
-          </button>
-
-          {/* Admin Dashboard / Mahi's Sanctuary */}
-          <button
-            onClick={onOpenAdmin}
-            className={`px-3 py-1.5 rounded-md text-xs font-sans-body font-medium transition-all flex items-center space-x-1.5 border ${
-              currentView === 'admin'
-                ? 'bg-[#d4af37] text-[#121013] border-[#d4af37] shadow-lg shadow-[#d4af37]/20 font-bold'
-                : 'bg-gradient-to-r from-[#2a1e17] to-[#1e1510] text-[#f3efe6] border-[#3d2e23] hover:border-[#d4af37]'
-            }`}
-          >
-            <BookOpen className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Mahi's Sanctuary</span>
-          </button>
-
-        </div>
+              <span className="hidden sm:inline max-w-[120px] truncate">{user.name}</span>
+              <span className="hidden sm:inline text-[10px] uppercase tracking-widest text-[#d4af37]/70 font-mono">
+                {user.role === 'Admin' ? 'Author' : 'Reader'}
+              </span>
+            </button>
+            <button
+              onClick={onSignOut}
+              className="flex items-center gap-1.5 text-[#8c8075] hover:text-[#c0533a] transition-colors text-sm font-sans cursor-pointer"
+              title="Sign Out"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
+          </>
+        )}
       </div>
     </header>
   );

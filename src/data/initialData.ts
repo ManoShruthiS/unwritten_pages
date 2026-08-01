@@ -12,6 +12,11 @@ export const INITIAL_DIARIES: Diary[] = [
     accentColor: '#d4af37',
     entryCount: 4,
     lastUpdated: 'July 28, 2026',
+    sections: [
+      { id: 'ch-reflections', name: 'Reflections' },
+      { id: 'ch-projects', name: 'Projects' },
+      { id: 'ch-tutorials', name: 'Tutorials' }
+    ],
     isPinned: true,
     isFeatured: true
   },
@@ -26,6 +31,10 @@ export const INITIAL_DIARIES: Diary[] = [
     accentColor: '#38bdf8',
     entryCount: 2,
     lastUpdated: 'July 25, 2026',
+    sections: [
+      { id: 'ai-research', name: 'Research' },
+      { id: 'ai-thoughts', name: 'Thoughts' }
+    ],
     isFeatured: true
   },
   {
@@ -38,7 +47,11 @@ export const INITIAL_DIARIES: Diary[] = [
     spineColor: '#0e2417',
     accentColor: '#10b981',
     entryCount: 1,
-    lastUpdated: 'July 20, 2026'
+    lastUpdated: 'July 20, 2026',
+    sections: [
+      { id: 'py-snippets', name: 'Snippets' },
+      { id: 'py-deep-dives', name: 'Deep Dives' }
+    ]
   },
   {
     id: 'java-journal',
@@ -50,7 +63,11 @@ export const INITIAL_DIARIES: Diary[] = [
     spineColor: '#26120e',
     accentColor: '#f97316',
     entryCount: 1,
-    lastUpdated: 'July 15, 2026'
+    lastUpdated: 'July 15, 2026',
+    sections: [
+      { id: 'java-core', name: 'Core Concepts' },
+      { id: 'java-systems', name: 'Systems Architecture' }
+    ]
   },
   {
     id: 'dsa-journal',
@@ -62,7 +79,11 @@ export const INITIAL_DIARIES: Diary[] = [
     spineColor: '#1d1027',
     accentColor: '#a855f7',
     entryCount: 1,
-    lastUpdated: 'July 10, 2026'
+    lastUpdated: 'July 10, 2026',
+    sections: [
+      { id: 'dsa-algorithms', name: 'Algorithms' },
+      { id: 'dsa-problems', name: 'Problem Solving' }
+    ]
   },
   {
     id: 'life-journal',
@@ -74,7 +95,11 @@ export const INITIAL_DIARIES: Diary[] = [
     spineColor: '#241a12',
     accentColor: '#e5c158',
     entryCount: 1,
-    lastUpdated: 'July 05, 2026'
+    lastUpdated: 'July 05, 2026',
+    sections: [
+      { id: 'life-philosophy', name: 'Philosophy' },
+      { id: 'life-musings', name: 'Musings' }
+    ]
   },
   {
     id: 'personal-reflections',
@@ -86,7 +111,11 @@ export const INITIAL_DIARIES: Diary[] = [
     spineColor: '#12121d',
     accentColor: '#cbd5e1',
     entryCount: 1,
-    lastUpdated: 'June 29, 2026'
+    lastUpdated: 'June 29, 2026',
+    sections: [
+      { id: 'pr-discipline', name: 'Discipline' },
+      { id: 'pr-focus', name: 'Focus' }
+    ]
   }
 ];
 
@@ -94,6 +123,7 @@ export const INITIAL_ENTRIES: JournalEntry[] = [
   {
     id: 'ch-001',
     diaryId: 'codershigh',
+    sectionId: 'ch-reflections',
     entryNumber: 'Entry 001',
     title: 'The Beginning',
     subtitle: 'Stepping into the sanctuary of code and unwritten expectations.',
@@ -141,6 +171,7 @@ console.log(initiateJourney("Mahi 🦢"));
   {
     id: 'ch-002',
     diaryId: 'codershigh',
+    sectionId: 'ch-tutorials',
     entryNumber: 'Entry 002',
     title: 'Understanding Git',
     subtitle: 'Taming time travel, branches, and merge conflict anxiety.',
@@ -183,6 +214,7 @@ git rebase origin/main
   {
     id: 'ch-003',
     diaryId: 'codershigh',
+    sectionId: 'ch-projects',
     entryNumber: 'Entry 003',
     title: 'Building My First Project',
     subtitle: 'From empty folder to living software: lessons from the furnace of creation.',
@@ -237,6 +269,7 @@ export function useReadingProgress() {
   {
     id: 'ch-004',
     diaryId: 'codershigh',
+    sectionId: 'ch-reflections',
     entryNumber: 'Entry 004',
     title: 'Mistakes That Made Me Better',
     subtitle: 'A humble inventory of bugs, failed assumptions, and hard-earned wisdom.',
@@ -274,6 +307,7 @@ Looking back over the past few weeks, the code that broke taught me tenfold more
   {
     id: 'ai-001',
     diaryId: 'ai-journal',
+    sectionId: 'ai-research',
     entryNumber: 'Entry 001',
     title: 'The Spark of Generative Intelligence',
     subtitle: 'Demystifying latent spaces, embeddings, and prompt design.',
@@ -317,6 +351,7 @@ print(f"Semantic Alignment: {cosine_similarity(vec_king, vec_queen):.4f}")
   {
     id: 'py-001',
     diaryId: 'python-journal',
+    sectionId: 'py-deep-dives',
     entryNumber: 'Entry 001',
     title: 'Decorators and Generator Elegance',
     subtitle: 'Crafting expressive Python pipelines with zero memory footprint.',
@@ -362,6 +397,7 @@ def read_journal_pages(file_path):
   {
     id: 'life-001',
     diaryId: 'life-journal',
+    sectionId: 'life-musings',
     entryNumber: 'Entry 001',
     title: 'On Solitude, Books, and the Joy of Unhurried Learning',
     subtitle: 'Why deep focus requires stepping away from the endless feed.',
@@ -426,3 +462,4 @@ export const INITIAL_COMMENTS: Comment[] = [
     parentId: null
   }
 ];
+
