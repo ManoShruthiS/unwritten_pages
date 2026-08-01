@@ -1,0 +1,6 @@
+{
+  "name": "The Unwritten Pages",
+  "description": "A digital library owned by Mahi 🦢 — 'Thoughts Nobody Ordered. Learning as a Journey.'",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
