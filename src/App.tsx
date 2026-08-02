@@ -310,43 +310,42 @@ export default function App() {
 
 
   const handleCreateDiary = (diaryData: Partial<Diary>) => {
-    fetch('/api/diaries', {
+    const newDiaryPayload = {
+      id: `diary-${Date.now()}`,
+      slug: diaryData.title?.toLowerCase().replace(/\s+/g, '-') || 'new-diary',
+      title: diaryData.title || 'Untitled Volume',
+      description: diaryData.description || '',
+      icon: diaryData.icon || 'BookOpen',
+      coverColor: diaryData.coverColor || '#2b1b17',
+      spineColor: '#1a100d',
+      accentColor: '#d4af37',
+      entryCount: 0,
+      lastUpdated: 'Today',
+      sections: diaryData.sections || []
+    };
+
+    fetch('http://localhost:5000/api/diaries', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(diaryData)
+      body: JSON.stringify(newDiaryPayload)
     })
       .then(res => res.json())
-      .then(data => {
-        if (data.success && data.diary) {
-          setDiaries(prev => [...prev, data.diary]);
-        }
+      .then(created => {
+        setDiaries(prev => [...prev, created]);
       })
       .catch(() => {
-        const fallbackDiary: Diary = {
-          id: `diary-${Date.now()}`,
-          slug: diaryData.title?.toLowerCase().replace(/\s+/g, '-') || 'new-diary',
-          title: diaryData.title || 'Untitled Volume',
-          description: diaryData.description || '',
-          icon: diaryData.icon || 'BookOpen',
-          coverColor: diaryData.coverColor || '#2b1b17',
-          spineColor: '#1a100d',
-          accentColor: '#d4af37',
-          entryCount: 0,
-          lastUpdated: 'Today',
-          sections: diaryData.sections || []
-        };
-        setDiaries(prev => [...prev, fallbackDiary]);
+        setDiaries(prev => [...prev, newDiaryPayload]);
       });
   };
 
   const handleDeleteDiary = (diaryId: string) => {
-    fetch(`/api/diaries/${diaryId}`, { method: 'DELETE' }).catch(() => {});
+    fetch(`http://localhost:5000/api/diaries/${diaryId}`, { method: 'DELETE' }).catch(() => {});
     setDiaries(prev => prev.filter(d => d.id !== diaryId));
     setEntries(prev => prev.filter(e => e.diaryId !== diaryId));
   };
 
   const handleUpdateDiary = (diaryId: string, diaryData: Partial<Diary>) => {
-    fetch(`/api/diaries/${diaryId}`, {
+    fetch(`http://localhost:5000/api/diaries/${diaryId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(diaryData)
@@ -355,49 +354,52 @@ export default function App() {
   };
 
   const handleCreateEntry = (entryData: Partial<JournalEntry>) => {
-    fetch('/api/entries', {
+    const newEntryPayload = {
+      id: `entry-${Date.now()}`,
+      diaryId: entryData.diaryId || diaries[0]?.id || 'codershigh',
+      sectionId: entryData.sectionId || '',
+      entryNumber: `Entry ${String(entries.length + 1).padStart(3, '0')}`,
+      title: entryData.title || 'New Reflection',
+      subtitle: entryData.subtitle || '',
+      publishedDate: 'Today',
+      updatedDate: 'Today',
+      readingTime: entryData.readingTime || '5 min read',
+      tags: entryData.tags || ['Reflections'],
+      coverImage: entryData.coverImage || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80',
+      previewParagraph: entryData.previewParagraph || '',
+      content: entryData.content || '',
+      likes: 0,
+      commentsCount: 0,
+      slug: entryData.title?.toLowerCase().replace(/\s+/g, '-') || 'entry',
+      isPinned: entryData.isPinned || false,
+      isFeatured: entryData.isFeatured || false
+    };
+
+    fetch('http://localhost:5000/api/entries', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(entryData)
+      body: JSON.stringify(newEntryPayload)
     })
       .then(res => res.json())
-      .then(data => {
-        if (data.success && data.entry) {
-          setEntries(prev => [data.entry, ...prev]);
-        }
+      .then(created => {
+        setEntries(prev => [created, ...prev]);
+        // Refresh diaries to update entryCount
+        fetch('http://localhost:5000/api/diaries')
+          .then(res => res.json())
+          .then(d => { if (Array.isArray(d)) setDiaries(d); });
       })
       .catch(() => {
-        const fallbackEntry: JournalEntry = {
-          id: `entry-${Date.now()}`,
-          diaryId: entryData.diaryId || diaries[0]?.id,
-          sectionId: entryData.sectionId || '',
-          entryNumber: `Entry ${String(entries.length + 1).padStart(3, '0')}`,
-          title: entryData.title || 'New Reflection',
-          subtitle: entryData.subtitle || '',
-          publishedDate: 'Just now',
-          updatedDate: 'Just now',
-          readingTime: entryData.readingTime || '5 min read',
-          tags: entryData.tags || ['Reflections'],
-          coverImage: entryData.coverImage || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80',
-          previewParagraph: entryData.previewParagraph || '',
-          content: entryData.content || '',
-          likes: 0,
-          commentsCount: 0,
-          slug: entryData.title?.toLowerCase().replace(/\s+/g, '-') || 'entry',
-          isPinned: entryData.isPinned || false,
-          isFeatured: entryData.isFeatured || false
-        };
-        setEntries(prev => [fallbackEntry, ...prev]);
+        setEntries(prev => [newEntryPayload, ...prev]);
       });
   };
 
   const handleDeleteEntry = (entryId: string) => {
-    fetch(`/api/entries/${entryId}`, { method: 'DELETE' }).catch(() => {});
+    fetch(`http://localhost:5000/api/entries/${entryId}`, { method: 'DELETE' }).catch(() => {});
     setEntries(prev => prev.filter(e => e.id !== entryId));
   };
 
   const handleUpdateEntry = (entryId: string, entryData: Partial<JournalEntry>) => {
-    fetch(`/api/entries/${entryId}`, {
+    fetch(`http://localhost:5000/api/entries/${entryId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(entryData)
