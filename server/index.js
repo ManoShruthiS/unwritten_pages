@@ -16,7 +16,7 @@ const Diary = require('./models/Diary');
 const Entry = require('./models/Entry');
 const Comment = require('./models/Comment');
 
-// --- INITIAL SEED DATA ---
+// --- FULL INITIAL SEED DATA ---
 const INITIAL_DIARIES = [
   {
     id: 'codershigh',
@@ -46,7 +46,7 @@ const INITIAL_DIARIES = [
     coverColor: '#1c2e3b',
     spineColor: '#101d27',
     accentColor: '#38bdf8',
-    entryCount: 2,
+    entryCount: 1,
     lastUpdated: 'July 25, 2026',
     sections: [
       { id: 'ai-research', name: 'Research' },
@@ -79,7 +79,7 @@ const INITIAL_DIARIES = [
     coverColor: '#3b201c',
     spineColor: '#26120e',
     accentColor: '#f97316',
-    entryCount: 1,
+    entryCount: 0,
     lastUpdated: 'July 15, 2026',
     sections: [
       { id: 'java-core', name: 'Core Concepts' },
@@ -95,7 +95,7 @@ const INITIAL_DIARIES = [
     coverColor: '#2d1c3b',
     spineColor: '#1d1027',
     accentColor: '#a855f7',
-    entryCount: 1,
+    entryCount: 0,
     lastUpdated: 'July 10, 2026',
     sections: [
       { id: 'dsa-algorithms', name: 'Algorithms' },
@@ -115,65 +115,177 @@ const INITIAL_DIARIES = [
     lastUpdated: 'July 05, 2026',
     sections: [
       { id: 'life-philosophy', name: 'Philosophy' },
-      { id: 'life-reflections', name: 'Reflections' }
+      { id: 'life-musings', name: 'Musings' }
+    ]
+  },
+  {
+    id: 'personal-reflections',
+    slug: 'personal-reflections',
+    title: 'Personal Reflections',
+    description: 'Unfiltered thoughts on discipline, deep focus in a noisy world, and keeping promises to oneself.',
+    icon: 'Compass',
+    coverColor: '#1f1f2e',
+    spineColor: '#12121d',
+    accentColor: '#cbd5e1',
+    entryCount: 0,
+    lastUpdated: 'June 29, 2026',
+    sections: [
+      { id: 'pr-discipline', name: 'Discipline' },
+      { id: 'pr-focus', name: 'Focus' }
     ]
   }
 ];
 
 const INITIAL_ENTRIES = [
   {
-    id: 'entry-ch-1',
+    id: 'ch-001',
     diaryId: 'codershigh',
     sectionId: 'ch-reflections',
-    entryNumber: 'ENTRY #001',
-    title: 'Beginning the CodersHigh Journey',
-    subtitle: 'Stepping into a structured haven for deep coding and disciplined growth.',
-    publishedDate: 'July 28, 2026',
-    readingTime: '4 min read',
-    tags: ['CodersHigh', 'Reflection', 'Milestone'],
+    entryNumber: 'Entry 001',
+    title: 'The Beginning',
+    subtitle: 'Stepping into the sanctuary of code and unwritten expectations.',
+    publishedDate: 'July 10, 2026',
+    updatedDate: 'July 10, 2026',
+    readingTime: '5 min read',
+    tags: ['CodersHigh', 'Beginning', 'Mindset', 'Growth'],
     coverImage: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80',
-    previewParagraph: 'Today marks the official commencement of CodersHigh. Walking into this dedicated environment feels like entering a sanctuary where code is treated with reverence.',
-    content: `Today marks the official commencement of CodersHigh. Walking into this dedicated environment feels like entering a sanctuary where code is treated with reverence.
+    previewParagraph: 'Every programmer remembers the quiet tremor of their very first blank editor window. Not knowing which commands to trust, yet sensing that somewhere inside those empty lines lay the power to build worlds.',
+    content: `# The First Page in the Dark
 
-The objective isn't merely to write lines of syntax, but to craft thoughtful software architecture. Every challenge encountered here is an invitation to refine logic and deepen understanding.
+Every journey starts with silence. Sitting at my desk with a steaming mug of black tea and a freshly cloned repository, I realized that learning to program isn't merely about memorizing syntax—it is about cultivating a relationship with problem-solving.
 
-### Key Intentions for this Cohort:
-1. **Consistency over Intensity:** Daily deliberate practice beats midnight burnouts.
-2. **Deep Documentation:** Writing down not just *what* works, but *why* it works.
-3. **Clean Architecture:** Prioritizing readable, maintainable, and elegant code structures.
+> "We don't write code to tell the machine what to do; we write code to structure our own thinking."
 
-> "True craftsmanship lies in the quiet details that most viewers will never notice."
-
-As I turn this first page, I am eager to see how the subsequent chapters unfold.`,
-    likes: 12,
+When I joined **CodersHigh**, I made a promise to myself: I would document not only the code that compiles, but the confusion, the dead ends, and the quiet epiphanies along the way.`,
+    likes: 42,
     commentsCount: 0,
     isPinned: true,
-    isFeatured: true,
-    slug: 'beginning-the-codershigh-journey'
+    slug: 'the-beginning'
   },
   {
-    id: 'entry-ch-2',
+    id: 'ch-002',
+    diaryId: 'codershigh',
+    sectionId: 'ch-tutorials',
+    entryNumber: 'Entry 002',
+    title: 'Understanding Git',
+    subtitle: 'Taming time travel, branches, and merge conflict anxiety.',
+    publishedDate: 'July 14, 2026',
+    updatedDate: 'July 14, 2026',
+    readingTime: '7 min read',
+    tags: ['Git', 'VersionControl', 'CodersHigh', 'Workflow'],
+    coverImage: 'https://images.unsplash.com/photo-1556075798-4825dfaaf498?auto=format&fit=crop&w=1200&q=80',
+    previewParagraph: 'Git is often described as a DAG (Directed Acyclic Graph) of snapshots. But to a beginner, it feels like managing multiple parallel dimensions without losing your home universe.',
+    content: `# The Physics of Version Control
+
+In my second week at **CodersHigh**, Git stopped being a scary list of memorized commands and started making conceptual sense.
+
+### The Mental Model
+Think of Git not as a file syncer like Dropbox, but as an **immutable append-only tree of snapshots**. Every commit is a state node pointed to by its parent commit hash.`,
+    likes: 38,
+    commentsCount: 0,
+    slug: 'understanding-git'
+  },
+  {
+    id: 'ch-003',
     diaryId: 'codershigh',
     sectionId: 'ch-projects',
-    entryNumber: 'ENTRY #002',
-    title: 'Building the Digital Sanctuary',
-    subtitle: 'Designing a library-themed space for unwritten pages and quiet thoughts.',
-    publishedDate: 'July 26, 2026',
-    readingTime: '6 min read',
-    tags: ['React', 'TypeScript', 'Design'],
-    coverImage: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1200&q=80',
-    previewParagraph: 'Modern web design often feels rushed and noisy. For this project, I wanted to build an aesthetic refuge inspired by ancient libraries, leather-bound books, and quiet reading desks.',
-    content: `Modern web design often feels rushed and noisy. For this project, I wanted to build an aesthetic refuge inspired by ancient libraries, leather-bound books, and quiet reading desks.
+    entryNumber: 'Entry 003',
+    title: 'Building My First Project',
+    subtitle: 'From empty folder to living software: lessons from the furnace of creation.',
+    publishedDate: 'July 21, 2026',
+    updatedDate: 'July 22, 2026',
+    readingTime: '8 min read',
+    tags: ['FullStack', 'CodersHigh', 'Projects', 'Design'],
+    coverImage: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80',
+    previewParagraph: 'There is a distinct magic when wireframes and abstract components solidify into an interactive application that responds gracefully under your fingertips.',
+    content: `# Architecture from the Ground Up
 
-### Design Principles Chosen:
-- **Warm Leather & Gold Accents:** Using rich HSL colors like deep mahogany (#2b1b17) and warm gold (#d4af37).
-- **Typography as Art:** Pairing classical serif headers (Cinzel) with ultra-readable body text.
-- **Physical Feel:** Giving pages physical depth, soft spine shadows, and delicate bookmark ribbons.
-
-Building this sanctuary has reinforced how powerful thoughtful UI design can be in creating emotional resonance.`,
-    likes: 8,
+Building my first full-stack application at CodersHigh taught me that architecture is the art of making decisions early so that late changes don't crush you.`,
+    likes: 54,
     commentsCount: 0,
-    slug: 'building-the-digital-sanctuary'
+    isFeatured: true,
+    slug: 'building-my-first-project'
+  },
+  {
+    id: 'ch-004',
+    diaryId: 'codershigh',
+    sectionId: 'ch-reflections',
+    entryNumber: 'Entry 004',
+    title: 'Mistakes That Made Me Better',
+    subtitle: 'A humble inventory of bugs, failed assumptions, and hard-earned wisdom.',
+    publishedDate: 'July 28, 2026',
+    updatedDate: 'July 28, 2026',
+    readingTime: '6 min read',
+    tags: ['Debugging', 'Mindset', 'CodersHigh', 'Reflections'],
+    coverImage: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1200&q=80',
+    previewParagraph: 'Bugs are not insults to our intelligence; they are compass directions showing us where our mental models deviate from reality.',
+    content: `# The Catalog of Helpful Failures
+
+Looking back over the past few weeks, the code that broke taught me tenfold more than the code that worked on the first try.`,
+    likes: 49,
+    commentsCount: 0,
+    slug: 'mistakes-that-made-me-better'
+  },
+  {
+    id: 'ai-001',
+    diaryId: 'ai-journal',
+    sectionId: 'ai-research',
+    entryNumber: 'Entry 001',
+    title: 'The Spark of Generative Intelligence',
+    subtitle: 'Demystifying latent spaces, embeddings, and prompt design.',
+    publishedDate: 'July 25, 2026',
+    updatedDate: 'July 25, 2026',
+    readingTime: '9 min read',
+    tags: ['AI', 'LLM', 'Generative', 'Embeddings'],
+    coverImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+    previewParagraph: 'When a model translates human language into a high-dimensional vector space, concepts become geometric coordinates where semantic distance can be calculated with cosine similarity.',
+    content: `# Navigating the Geometry of Meaning
+
+In generative AI, text isn't represented as letters or words, but as **vectors in a continuous manifold**.`,
+    likes: 67,
+    commentsCount: 0,
+    slug: 'spark-of-generative-intelligence'
+  },
+  {
+    id: 'py-001',
+    diaryId: 'python-journal',
+    sectionId: 'py-deep-dives',
+    entryNumber: 'Entry 001',
+    title: 'Decorators and Generator Elegance',
+    subtitle: 'Crafting expressive Python pipelines with zero memory footprint.',
+    publishedDate: 'July 20, 2026',
+    updatedDate: 'July 20, 2026',
+    readingTime: '6 min read',
+    tags: ['Python', 'Generators', 'Decorators', 'CleanCode'],
+    coverImage: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80',
+    previewParagraph: 'Python generators allow us to process streams of arbitrary size lazily. Combined with higher-order decorators, we can write code that reads like poetry while maintaining memory efficiency.',
+    content: `# The Quiet Elegance of Yield
+
+Generators yield control back to the caller without destroying local stack state.`,
+    likes: 31,
+    commentsCount: 0,
+    slug: 'decorators-and-generator-elegance'
+  },
+  {
+    id: 'life-001',
+    diaryId: 'life-journal',
+    sectionId: 'life-musings',
+    entryNumber: 'Entry 001',
+    title: 'On Solitude, Books, and the Joy of Unhurried Learning',
+    subtitle: 'Why deep focus requires stepping away from the endless feed.',
+    publishedDate: 'July 05, 2026',
+    updatedDate: 'July 05, 2026',
+    readingTime: '5 min read',
+    tags: ['Solitude', 'Reading', 'Philosophy', 'Focus'],
+    coverImage: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1200&q=80',
+    previewParagraph: 'In an era that rewards rapid hot-takes and instant notifications, sitting quietly in a room with a single dense book feels like an act of gentle defiance.',
+    content: `# The Sanctuary of Quiet Hours
+
+I wrote this entry sitting by a window as evening twilight settled over my bookshelves.`,
+    likes: 89,
+    commentsCount: 0,
+    isFeatured: true,
+    slug: 'on-solitude-books-and-unhurried-learning'
   }
 ];
 
@@ -181,20 +293,18 @@ Building this sanctuary has reinforced how powerful thoughtful UI design can be 
 async function seedDatabase() {
   const diaryCount = await Diary.countDocuments();
   if (diaryCount === 0) {
-    console.log('🌱 Seeding initial Diaries...');
+    console.log('🌱 Seeding complete set of 7 Diaries into MongoDB Atlas...');
     await Diary.insertMany(INITIAL_DIARIES);
   }
 
   const entryCount = await Entry.countDocuments();
   if (entryCount === 0) {
-    console.log('🌱 Seeding initial Journal Entries...');
+    console.log('🌱 Seeding complete set of 7 Journal Entries into MongoDB Atlas...');
     await Entry.insertMany(INITIAL_ENTRIES);
   }
 }
 
 // --- AUTH API ROUTES ---
-
-// 1. Reader Registration
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { username, code } = req.body;
@@ -211,7 +321,7 @@ app.post('/api/auth/register', async (req, res) => {
 
     const newUser = new User({
       username: cleanUsername,
-      password: code, // Saved as code for simple 4-digit auth
+      password: code,
       name: username.charAt(0).toUpperCase() + username.slice(1),
       role: 'Reader',
       bookmarks: [],
@@ -234,7 +344,6 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-// 2. Auth Login (Author & Reader)
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, code, role } = req.body;
@@ -257,7 +366,6 @@ app.post('/api/auth/login', async (req, res) => {
       }
     }
 
-    // Reader Login
     const user = await User.findOne({ username: cleanUsername });
     if (!user) {
       return res.status(404).json({ error: 'Account not found. Please sign up first.' });
@@ -281,9 +389,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// --- DATA API ROUTES ---
-
-// Get all diaries
+// --- DIARIES API ROUTES ---
 app.get('/api/diaries', async (req, res) => {
   try {
     const diaries = await Diary.find();
@@ -293,7 +399,35 @@ app.get('/api/diaries', async (req, res) => {
   }
 });
 
-// Get all journal entries
+app.post('/api/diaries', async (req, res) => {
+  try {
+    const newDiary = new Diary(req.body);
+    await newDiary.save();
+    res.status(201).json(newDiary);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create diary.' });
+  }
+});
+
+app.put('/api/diaries/:id', async (req, res) => {
+  try {
+    const updated = await Diary.findOneAndUpdate({ id: req.params.id }, req.body, { new: true });
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update diary.' });
+  }
+});
+
+app.delete('/api/diaries/:id', async (req, res) => {
+  try {
+    await Diary.findOneAndDelete({ id: req.params.id });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete diary.' });
+  }
+});
+
+// --- ENTRIES API ROUTES ---
 app.get('/api/entries', async (req, res) => {
   try {
     const entries = await Entry.find();
@@ -303,13 +437,12 @@ app.get('/api/entries', async (req, res) => {
   }
 });
 
-// Create new Entry (Author only)
 app.post('/api/entries', async (req, res) => {
   try {
     const newEntry = new Entry(req.body);
     await newEntry.save();
     
-    // Update diary count
+    // Auto increment parent diary's entryCount
     await Diary.findOneAndUpdate({ id: newEntry.diaryId }, { $inc: { entryCount: 1 } });
 
     res.status(201).json(newEntry);
@@ -318,7 +451,28 @@ app.post('/api/entries', async (req, res) => {
   }
 });
 
-// Toggle Like on an Entry
+app.put('/api/entries/:id', async (req, res) => {
+  try {
+    const updated = await Entry.findOneAndUpdate({ id: req.params.id }, req.body, { new: true });
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update entry.' });
+  }
+});
+
+app.delete('/api/entries/:id', async (req, res) => {
+  try {
+    const entry = await Entry.findOneAndDelete({ id: req.params.id });
+    if (entry) {
+      await Diary.findOneAndUpdate({ id: entry.diaryId }, { $inc: { entryCount: -1 } });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete entry.' });
+  }
+});
+
+// Like Entry Endpoint
 app.post('/api/entries/:id/like', async (req, res) => {
   try {
     const { userId } = req.body;
@@ -342,7 +496,7 @@ app.post('/api/entries/:id/like', async (req, res) => {
   }
 });
 
-// Toggle Bookmark on an Entry
+// Bookmark Endpoint
 app.post('/api/users/:id/bookmark', async (req, res) => {
   try {
     const { entryId } = req.body;
@@ -362,6 +516,19 @@ app.post('/api/users/:id/bookmark', async (req, res) => {
     res.json({ bookmarks: user.bookmarks });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update bookmarks.' });
+  }
+});
+
+// Seed API Endpoint
+app.post('/api/seed', async (req, res) => {
+  try {
+    await Diary.deleteMany({});
+    await Entry.deleteMany({});
+    await Diary.insertMany(INITIAL_DIARIES);
+    await Entry.insertMany(INITIAL_ENTRIES);
+    res.json({ success: true, message: 'Database successfully re-seeded!' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to seed database.' });
   }
 });
 
