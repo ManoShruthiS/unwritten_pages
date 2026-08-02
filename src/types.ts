@@ -63,8 +63,8 @@ export interface UserProfile {
   followingAuthor: boolean;
   bookmarks: string[]; // entry IDs
   likedEntries: string[]; // entry IDs
-  readingStreak: number;
-  lastReadDate?: string;
+  readHistory?: string[]; // entry IDs read by user
+  lastActiveDate?: string;
 }
 
 export interface NotificationItem {

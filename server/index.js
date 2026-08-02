@@ -336,8 +336,7 @@ app.post('/api/auth/register', async (req, res) => {
       username: newUser.username,
       role: newUser.role,
       bookmarks: newUser.bookmarks,
-      likedEntries: newUser.likedEntries,
-      readingStreak: newUser.readingStreak
+      likedEntries: newUser.likedEntries
     });
   } catch (err) {
     res.status(500).json({ error: 'Server error during registration.' });
@@ -358,8 +357,7 @@ app.post('/api/auth/login', async (req, res) => {
           role: 'Admin',
           followingAuthor: true,
           bookmarks: [],
-          likedEntries: [],
-          readingStreak: 5
+          likedEntries: []
         });
       } else {
         return res.status(401).json({ error: 'Incorrect Author credentials.' });
@@ -381,8 +379,7 @@ app.post('/api/auth/login', async (req, res) => {
       username: user.username,
       role: user.role,
       bookmarks: user.bookmarks,
-      likedEntries: user.likedEntries,
-      readingStreak: user.readingStreak
+      likedEntries: user.likedEntries
     });
   } catch (err) {
     res.status(500).json({ error: 'Server error during login.' });

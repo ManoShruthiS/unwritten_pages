@@ -42,8 +42,7 @@ export default function App() {
         role: 'Reader',
         followingAuthor: true,
         bookmarks: ['ch-001', 'ch-003'],
-        likedEntries: ['ch-001'],
-        readingStreak: 3
+        likedEntries: ['ch-001']
       };
     } catch {
       return {
@@ -54,8 +53,7 @@ export default function App() {
         role: 'Reader',
         followingAuthor: true,
         bookmarks: ['ch-001', 'ch-003'],
-        likedEntries: ['ch-001'],
-        readingStreak: 3
+        likedEntries: ['ch-001']
       };
     }
   });

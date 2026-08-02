@@ -10,7 +10,8 @@ const userSchema = new mongoose.Schema({
   followingAuthor: { type: Boolean, default: true },
   bookmarks: [{ type: String }],
   likedEntries: [{ type: String }],
-  readingStreak: { type: Number, default: 1 }
+  readHistory: [{ type: String }],
+  lastActiveDate: { type: String }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);
