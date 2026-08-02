@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Feather, BookOpen } from 'lucide-react';
+import { Feather, Github, Linkedin, Mail } from 'lucide-react';
 
 export const AboutView: React.FC = () => {
   return (
@@ -40,11 +40,13 @@ export const AboutView: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex justify-center mt-8 pt-8 border-t border-[#2d211a]">
-          <div className="text-center">
-            <BookOpen className="w-6 h-6 text-[#d4af37]/60 mx-auto mb-2" />
-            <span className="text-xs font-mono tracking-widest text-[#a3978c] uppercase">Est. 2024</span>
-          </div>
+        <div className="flex justify-center space-x-6 mt-8 pt-8 border-t border-[#2d211a]">
+          <a href="https://github.com/ManoShruthiS" target="_blank" rel="noopener noreferrer" className="text-[#a3978c] hover:text-[#d4af37] transition-colors" title="GitHub">
+            <Github className="w-5 h-5" />
+          </a>
+          <a href="https://www.linkedin.com/in/manoshruthis" target="_blank" rel="noopener noreferrer" className="text-[#a3978c] hover:text-[#d4af37] transition-colors" title="LinkedIn">
+            <Linkedin className="w-5 h-5" />
+          </a>
         </div>
       </div>
     </motion.div>

@@ -41,8 +41,8 @@ export default function App() {
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
         role: 'Reader',
         followingAuthor: true,
-        bookmarks: ['ch-001', 'ch-003'],
-        likedEntries: ['ch-001']
+        bookmarks: [],
+        likedEntries: []
       };
     } catch {
       return {
@@ -52,32 +52,13 @@ export default function App() {
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
         role: 'Reader',
         followingAuthor: true,
-        bookmarks: ['ch-001', 'ch-003'],
-        likedEntries: ['ch-001']
+        bookmarks: [],
+        likedEntries: []
       };
     }
   });
 
-  const [comments, setComments] = useState<Comment[]>([
-    {
-      id: 'c-1',
-      entryId: 'ch-001',
-      authorName: 'Alex Dev',
-      authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
-      content: 'This reflection really resonated with me. I struggled with the same imposter syndrome when I started.',
-      date: 'July 22, 2026',
-      likes: 12
-    },
-    {
-      id: 'c-2',
-      entryId: 'ch-001',
-      authorName: 'Sarah J.',
-      authorAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
-      content: 'Beautifully written! The part about embracing failure as a feature, not a bug, is so true.',
-      date: 'July 24, 2026',
-      likes: 8
-    }
-  ]);
+  const [comments, setComments] = useState<Comment[]>([]);
 
   const [isParchmentMode, setIsParchmentMode] = useState(false);
 
@@ -98,22 +79,7 @@ export default function App() {
   const [isRssOpen, setIsRssOpen] = useState(false);
 
   // Notifications Data
-  const [notifications, setNotifications] = useState<NotificationItem[]>([
-    {
-      id: 'n-1',
-      title: 'New Page Bound',
-      message: 'Mahi swan bound "Mistakes That Made Me Better" into The CodersHigh Journal.',
-      date: 'July 28, 2026',
-      read: false
-    },
-    {
-      id: 'n-2',
-      title: 'Quill Reflection Published',
-      message: 'Mahi bound "The Spark of Generative Intelligence" into The AI Journal.',
-      date: 'July 25, 2026',
-      read: false
-    }
-  ]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
 
   // Persist User Profile
   useEffect(() => {
@@ -126,6 +92,7 @@ export default function App() {
 
   // Sync API Data on Mount (Connected to Express MongoDB Backend)
   useEffect(() => {
+    // Fetch Diaries
     fetch('http://localhost:5000/api/diaries')
       .then(res => res.json())
       .then(data => {
@@ -133,13 +100,32 @@ export default function App() {
       })
       .catch(() => {});
 
+    // Fetch Entries
     fetch('http://localhost:5000/api/entries')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) setEntries(data);
       })
       .catch(() => {});
-  }, []);
+      
+    // Fetch Comments
+    fetch('http://localhost:5000/api/comments')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setComments(data);
+      })
+      .catch(() => {});
+      
+    // Fetch Latest User Profile if Authenticated
+    if (isAuthenticated && user?.id) {
+      fetch(`http://localhost:5000/api/users/${user.id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.id) setUser(data);
+        })
+        .catch(() => {});
+    }
+  }, [isAuthenticated, user?.id]);
 
   // Keyboard shortcut for Cmd+K Search
   useEffect(() => {
@@ -250,11 +236,13 @@ export default function App() {
       }
       if (typeof data.entryLikes === 'number') {
         setEntries(prev => prev.map(e => e.id === entryId ? { ...e, likes: data.entryLikes } : e));
+        setSelectedEntry(prev => prev && prev.id === entryId ? { ...prev, likes: data.entryLikes } : prev);
       }
     })
     .catch(() => {
       // Fallback local update
       setEntries(prev => prev.map(e => e.id === entryId ? { ...e, likes: e.likes + 1 } : e));
+      setSelectedEntry(prev => prev && prev.id === entryId ? { ...prev, likes: prev.likes + 1 } : prev);
       setUser(prev => ({ ...prev, likedEntries: [...prev.likedEntries, entryId] }));
     });
   };
@@ -290,21 +278,31 @@ export default function App() {
   };
 
   const handleAddComment = (entryId: string, content: string) => {
-    const newComment: Comment = {
+    const newComment = {
       id: `c-${Date.now()}`,
       entryId,
       authorName: user.name,
       authorAvatar: user.avatar,
       content,
-      date: 'Just now',
+      date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
       likes: 0
     };
-    setComments(prev => [...prev, newComment]);
-    
-    // Increment commentsCount on the entry
-    setEntries(prev => prev.map(e => 
-      e.id === entryId ? { ...e, commentsCount: (e.commentsCount || 0) + 1 } : e
-    ));
+
+    fetch('http://localhost:5000/api/comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newComment)
+    })
+    .then(res => res.json())
+    .then(savedComment => {
+      setComments(prev => [...prev, savedComment]);
+      
+      // Increment comments count on the entry
+      setEntries(prev => prev.map(e => 
+        e.id === entryId ? { ...e, comments: (e.comments || 0) + 1 } : e
+      ));
+    })
+    .catch(err => console.error('Failed to post comment:', err));
   };
 
 
@@ -329,28 +327,45 @@ export default function App() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newDiaryPayload)
     })
-      .then(res => res.json())
+      .then(res => { if (!res.ok) throw new Error(`Failed to create diary (${res.status})`); return res.json(); })
       .then(created => {
         setDiaries(prev => [...prev, created]);
       })
-      .catch(() => {
-        setDiaries(prev => [...prev, newDiaryPayload]);
-      });
+      .catch(err => { console.error(err); refreshLibraryData(); });
+  };
+
+  const refreshLibraryData = () => {
+    fetch('http://localhost:5000/api/diaries')
+      .then(res => res.json())
+      .then(data => { if (Array.isArray(data)) setDiaries(data); })
+      .catch(() => {});
+    fetch('http://localhost:5000/api/entries')
+      .then(res => res.json())
+      .then(data => { if (Array.isArray(data)) setEntries(data); })
+      .catch(() => {});
   };
 
   const handleDeleteDiary = (diaryId: string) => {
-    fetch(`http://localhost:5000/api/diaries/${diaryId}`, { method: 'DELETE' }).catch(() => {});
+    // Optimistic UI update, then re-sync from Mongo so local state always matches the database
     setDiaries(prev => prev.filter(d => d.id !== diaryId));
     setEntries(prev => prev.filter(e => e.diaryId !== diaryId));
+    fetch(`http://localhost:5000/api/diaries/${diaryId}`, { method: 'DELETE' })
+      .then(res => { if (!res.ok) throw new Error(`Failed to delete diary (${res.status})`); return res.json(); })
+      .then(() => refreshLibraryData())
+      .catch(err => { console.error(err); refreshLibraryData(); });
   };
 
   const handleUpdateDiary = (diaryId: string, diaryData: Partial<Diary>) => {
+    // Optimistic UI update, then apply the Mongo-confirmed document
+    setDiaries(prev => prev.map(d => (d.id === diaryId ? { ...d, ...diaryData } : d)));
     fetch(`http://localhost:5000/api/diaries/${diaryId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(diaryData)
-    }).catch(() => {});
-    setDiaries(prev => prev.map(d => (d.id === diaryId ? { ...d, ...diaryData } : d)));
+    })
+      .then(res => { if (!res.ok) throw new Error(`Failed to update diary (${res.status})`); return res.json(); })
+      .then(updated => { if (updated) setDiaries(prev => prev.map(d => (d.id === diaryId ? updated : d))); })
+      .catch(err => { console.error(err); refreshLibraryData(); });
   };
 
   const handleCreateEntry = (entryData: Partial<JournalEntry>) => {
@@ -380,50 +395,62 @@ export default function App() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newEntryPayload)
     })
-      .then(res => res.json())
+      .then(res => { if (!res.ok) throw new Error(`Failed to create entry (${res.status})`); return res.json(); })
       .then(created => {
         setEntries(prev => [created, ...prev]);
         // Refresh diaries to update entryCount
-        fetch('http://localhost:5000/api/diaries')
-          .then(res => res.json())
-          .then(d => { if (Array.isArray(d)) setDiaries(d); });
+        refreshLibraryData();
       })
-      .catch(() => {
-        setEntries(prev => [newEntryPayload, ...prev]);
-      });
+      .catch(err => { console.error(err); refreshLibraryData(); });
   };
 
   const handleDeleteEntry = (entryId: string) => {
-    fetch(`http://localhost:5000/api/entries/${entryId}`, { method: 'DELETE' }).catch(() => {});
+    // Optimistic UI update, then re-sync from Mongo so local state always matches the database
     setEntries(prev => prev.filter(e => e.id !== entryId));
+    fetch(`http://localhost:5000/api/entries/${entryId}`, { method: 'DELETE' })
+      .then(res => { if (!res.ok) throw new Error(`Failed to delete entry (${res.status})`); return res.json(); })
+      .then(() => refreshLibraryData())
+      .catch(err => { console.error(err); refreshLibraryData(); });
   };
 
   const handleUpdateEntry = (entryId: string, entryData: Partial<JournalEntry>) => {
+    // Optimistic UI update, then apply the Mongo-confirmed document
+    setEntries(prev => prev.map(e => (e.id === entryId ? { ...e, ...entryData } : e)));
     fetch(`http://localhost:5000/api/entries/${entryId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(entryData)
-    }).catch(() => {});
-    setEntries(prev => prev.map(e => (e.id === entryId ? { ...e, ...entryData } : e)));
+    })
+      .then(res => { if (!res.ok) throw new Error(`Failed to update entry (${res.status})`); return res.json(); })
+      .then(updated => { if (updated) setEntries(prev => prev.map(e => (e.id === entryId ? updated : e))); })
+      .catch(err => { console.error(err); refreshLibraryData(); });
   };
 
   const handleTogglePinDiary = (diaryId: string) => {
     setDiaries(prev => prev.map(d => {
       if (d.id !== diaryId) return d;
       const nextPin = !d.isPinned;
-      fetch(`/api/diaries/${diaryId}`, {
+      fetch(`http://localhost:5000/api/diaries/${diaryId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isPinned: nextPin })
-      }).catch(() => {});
+      })
+        .then(res => { if (!res.ok) throw new Error(`Failed to update pin state (${res.status})`); })
+        .then(() => refreshLibraryData())
+        .catch(err => { console.error(err); refreshLibraryData(); });
       return { ...d, isPinned: nextPin };
     }));
   };
 
 
 
-  const bookmarkedEntries = entries.filter(e => user.bookmarks.includes(e.id));
+  const bookmarkedEntries = isAuthenticated ? entries.filter(e => user.bookmarks.includes(e.id)) : [];
   const unreadNotifications = notifications.filter(n => !n.read).length;
+  
+  const diariesWithCounts = diaries.map(d => ({
+    ...d,
+    entryCount: entries.filter(e => e.diaryId === d.id).length
+  }));
 
   const heroCta = !isAuthenticated
     ? { label: 'Open Library', icon: 'book' }
@@ -490,12 +517,20 @@ export default function App() {
                 />
               </div>
               <HeroLanding
-                onOpenLibrary={handleOpenLibrary}
+                onOpenLibrary={() => {
+                  if (user?.role === 'Admin') {
+                    setCurrentView('admin');
+                    setAdminActivePage('write');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  } else {
+                    handleNavigate('library');
+                  }
+                }}
                 ctaLabel={heroCta.label}
-                ctaIcon={heroCta.icon}
+                ctaIcon={heroCta.icon as any}
                 onSelectDiary={handleSelectDiary}
                 onSelectEntry={handleSelectEntry}
-                diaries={diaries}
+                diaries={diariesWithCounts}
                 entries={entries}
                 totalDiariesCount={diaries.length}
                 totalEntriesCount={entries.length}
@@ -506,7 +541,7 @@ export default function App() {
           {currentView === 'library' && (
             <motion.div key="library" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <LibraryShelves
-                diaries={diaries}
+                diaries={diariesWithCounts}
                 onSelectDiary={handleSelectDiary}
                 onOpenAdmin={() => setCurrentView('admin')}
                 canManage={isAuthenticated && user.role === 'Admin'}
@@ -560,9 +595,10 @@ export default function App() {
             <motion.div key="entry" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <JournalEntryView
                 entry={selectedEntry}
-                diary={selectedDiary || diaries.find(d => d.id === selectedEntry.diaryId)}
+                diary={selectedDiary || diariesWithCounts.find(d => d.id === selectedEntry.diaryId)}
                 allEntries={entries}
-                isBookmarked={user.bookmarks.includes(selectedEntry.id)}
+                isBookmarked={isAuthenticated && user.bookmarks.includes(selectedEntry.id)}
+                isLiked={isAuthenticated && user.likedEntries.includes(selectedEntry.id)}
                 onSelectEntry={handleSelectEntry}
                 onBackToDiary={() => setCurrentView('diary')}
                 onLikeEntry={handleLikeEntry}
@@ -579,7 +615,7 @@ export default function App() {
           {currentView === 'admin' && (
             <motion.div key="admin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <AuthorDashboard
-                diaries={diaries}
+                diaries={diariesWithCounts}
                 entries={entries}
                 authorName={user.name}
                 activePage={adminActivePage as any}
@@ -614,9 +650,12 @@ export default function App() {
       <SearchModal
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
-        diaries={diaries}
+        diaries={diariesWithCounts}
         entries={entries}
-        onSelectDiary={handleSelectDiary}
+        onSelectDiary={(d) => {
+          setIsSearchOpen(false);
+          handleSelectDiary(d);
+        }}
         onSelectEntry={handleSelectEntry}
       />
 

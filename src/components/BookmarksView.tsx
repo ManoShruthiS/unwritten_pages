@@ -39,7 +39,6 @@ export const BookmarksView: React.FC<BookmarksViewProps> = ({
                 <div 
                   onClick={() => {
                     onSelectEntry(entry);
-                    onClose();
                   }}
                   className="cursor-pointer space-y-1 flex-1"
                 >

@@ -18,6 +18,7 @@ interface JournalEntryViewProps {
   onBackToDiary: () => void;
   onLikeEntry: (entryId: string) => void;
   onBookmarkEntry: (entryId: string) => void;
+  isLiked: boolean;
   comments: Comment[];
   onAddComment: (entryId: string, content: string) => void;
   isAuthenticated: boolean;
@@ -32,6 +33,7 @@ export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
   onLikeEntry,
   onBookmarkEntry,
   isBookmarked,
+  isLiked,
   isParchmentMode,
   comments,
   onAddComment,
@@ -42,14 +44,14 @@ export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
   const [newComment, setNewComment] = useState('');
   const [showAuthWarning, setShowAuthWarning] = useState(false);
 
-  const [hasLiked, setHasLiked] = useState(false);
+  const [hasLiked, setHasLiked] = useState(isLiked);
   const [likesCount, setLikesCount] = useState(entry.likes);
 
   // Sync likes count on entry change
   useEffect(() => {
     setLikesCount(entry.likes);
-    setHasLiked(false);
-  }, [entry.id, entry.likes]);
+    setHasLiked(isLiked);
+  }, [entry.id, entry.likes, isLiked]);
 
   // Track reading scroll progress
   useEffect(() => {
@@ -296,7 +298,13 @@ export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
               </button>
 
               <button
-                onClick={() => onBookmarkEntry(entry.id)}
+                onClick={() => {
+                  if (!isAuthenticated) {
+                    setShowAuthWarning(true);
+                    return;
+                  }
+                  onBookmarkEntry(entry.id);
+                }}
                 className={`p-2.5 rounded-lg border transition-all text-xs ${
                   isBookmarked
                     ? 'bg-[#2b1e16] text-[#d4af37] border-[#d4af37]'
