@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Diary } from '../types';
-import { 
-  Code, Sparkles, Terminal, Coffee, Cpu, Feather, Compass, BookOpen, 
-  Search, Star, Plus, Bookmark, ArrowRight, ShieldCheck, Flame
-} from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
+import { BookOpen, Search, Star, Plus } from 'lucide-react';
 
 interface LibraryShelvesProps {
   diaries: Diary[];
@@ -13,19 +11,13 @@ interface LibraryShelvesProps {
   canManage?: boolean;
 }
 
-// Map string icon names to Lucide icon components
+// Map string icon names to Lucide icon components dynamically
 export const renderDiaryIcon = (iconName: string, className = "w-5 h-5") => {
-  switch (iconName.toLowerCase()) {
-    case 'code': return <Code className={className} />;
-    case 'sparkles': return <Sparkles className={className} />;
-    case 'terminal': return <Terminal className={className} />;
-    case 'coffee': return <Coffee className={className} />;
-    case 'cpu': return <Cpu className={className} />;
-    case 'feather': return <Feather className={className} />;
-    case 'compass': return <Compass className={className} />;
-    case 'flame': return <Flame className={className} />;
-    default: return <BookOpen className={className} />;
+  const IconComponent = (LucideIcons as any)[iconName];
+  if (IconComponent) {
+    return <IconComponent className={className} />;
   }
+  return <LucideIcons.BookOpen className={className} />;
 };
 
 export const LibraryShelves: React.FC<LibraryShelvesProps> = ({

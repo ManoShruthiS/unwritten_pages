@@ -112,7 +112,7 @@ app.get('/api/entries/:idOrSlug', async (req, res) => {
     const { rows } = await pool.query('SELECT * FROM entries WHERE id=$1 OR slug=$1', [idOrSlug]);
     if (!rows.length) return res.status(404).json({ success: false, message: 'Entry not found' });
 
-    await pool.query('UPDATE stats SET total_views = total_views + 1 WHERE id=1');
+
     res.json({ success: true, entry: rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, error: String(err) });
@@ -195,106 +195,6 @@ app.post('/api/entries/:id/like', async (req, res) => {
   }
 });
 
-// 11. Comments API
-app.get('/api/comments/:entryId', async (req, res) => {
-  try {
-    const { entryId } = req.params;
-    const { rows } = await pool.query('SELECT * FROM comments WHERE entry_id=$1 ORDER BY created_at ASC', [entryId]);
-    res.json({ success: true, comments: rows });
-  } catch (err) {
-    res.status(500).json({ success: false, error: String(err) });
-  }
-});
-
-app.post('/api/comments', async (req, res) => {
-  try {
-    const { entryId, authorName, authorAvatar, authorRole, content, parentId } = req.body;
-    const id = `comm-${Date.now()}`;
-    const createdAt = new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
-
-    const { rows } = await pool.query(
-      `INSERT INTO comments (id, entry_id, author_name, author_avatar, author_role, content, created_at, likes, parent_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,0,$8) RETURNING *`,
-      [id, entryId, authorName || 'Anonymous Scholar', authorAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80', authorRole || 'Reader', content, createdAt, parentId || null]
-    );
-
-    await pool.query('UPDATE entries SET comments_count = comments_count + 1 WHERE id=$1', [entryId]);
-    res.status(201).json({ success: true, comment: rows[0] });
-  } catch (err) {
-    res.status(500).json({ success: false, error: String(err) });
-  }
-});
-
-app.post('/api/comments/:id/like', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { rows } = await pool.query('UPDATE comments SET likes = likes + 1 WHERE id=$1 RETURNING likes', [id]);
-    if (!rows.length) return res.status(404).json({ success: false, message: 'Comment not found' });
-    res.json({ success: true, likes: rows[0].likes });
-  } catch (err) {
-    res.status(500).json({ success: false, error: String(err) });
-  }
-});
-
-app.delete('/api/comments/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    await pool.query('DELETE FROM comments WHERE id=$1', [id]);
-    res.json({ success: true, message: 'Comment deleted' });
-  } catch (err) {
-    res.status(500).json({ success: false, error: String(err) });
-  }
-});
-
-// 12. Newsletter Subscribe
-app.post('/api/subscribe', async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email || !email.includes('@')) {
-      return res.status(400).json({ success: false, message: 'Invalid email address' });
-    }
-    await pool.query('INSERT INTO subscribers (email) VALUES ($1) ON CONFLICT (email) DO NOTHING', [email]);
-    res.json({ success: true, message: "Welcome to Mahi's Quill dispatch." });
-  } catch (err) {
-    res.status(500).json({ success: false, error: String(err) });
-  }
-});
-
-// 13. Follow author
-app.post('/api/follow', async (req, res) => {
-  try {
-    await pool.query('UPDATE stats SET followers_count = followers_count + 1 WHERE id=1');
-    const { rows } = await pool.query('SELECT followers_count FROM stats WHERE id=1');
-    res.json({ success: true, followers: rows[0].followers_count });
-  } catch (err) {
-    res.status(500).json({ success: false, error: String(err) });
-  }
-});
-
-// 14. Global Stats
-app.get('/api/stats', async (req, res) => {
-  try {
-    const stats = await pool.query('SELECT * FROM stats WHERE id=1');
-    const entriesCount = await pool.query('SELECT COUNT(*)::int as cnt FROM entries');
-    const diariesCount = await pool.query('SELECT COUNT(*)::int as cnt FROM diaries');
-    const totalLikes = await pool.query('SELECT COALESCE(SUM(likes),0)::int as total FROM entries');
-    const subscribersCount = await pool.query('SELECT COUNT(*)::int as cnt FROM subscribers');
-
-    res.json({
-      success: true,
-      stats: {
-        diariesCount: diariesCount.rows[0].cnt,
-        entriesCount: entriesCount.rows[0].cnt,
-        totalLikes: totalLikes.rows[0].total,
-        totalViews: stats.rows[0].total_views,
-        followersCount: stats.rows[0].followers_count,
-        subscribersCount: subscribersCount.rows[0].cnt
-      }
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, error: String(err) });
-  }
-});
 
 // 15. RSS Feed XML
 app.get('/api/rss.xml', async (req, res) => {

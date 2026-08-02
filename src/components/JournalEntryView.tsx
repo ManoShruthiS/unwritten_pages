@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import confetti from 'canvas-confetti';
-import { JournalEntry, Comment, Diary } from '../types';
+import { JournalEntry, Diary } from '../types';
 import { 
   ArrowLeft, Clock, Calendar, Heart, Bookmark, Share2, 
   Check, MessageSquare, Send, ThumbsUp, ShieldAlert, Sparkles, 
@@ -12,14 +12,7 @@ interface JournalEntryViewProps {
   entry: JournalEntry;
   diary?: Diary;
   allEntries: JournalEntry[];
-  comments: Comment[];
-  onSelectEntry: (entry: JournalEntry) => void;
-  onBackToDiary: () => void;
-  onLikeEntry: (entryId: string) => void;
-  onBookmarkEntry: (entryId: string) => void;
   isBookmarked: boolean;
-  onAddComment: (content: string, parentId?: string | null) => void;
-  onLikeComment: (commentId: string) => void;
   isParchmentMode: boolean;
 }
 
@@ -27,21 +20,16 @@ export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
   entry,
   diary,
   allEntries,
-  comments,
   onSelectEntry,
   onBackToDiary,
   onLikeEntry,
   onBookmarkEntry,
   isBookmarked,
-  onAddComment,
-  onLikeComment,
   isParchmentMode
 }) => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [newCommentText, setNewCommentText] = useState('');
-  const [replyToId, setReplyToId] = useState<string | null>(null);
-  const [replyText, setReplyText] = useState('');
+
   const [hasLiked, setHasLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(entry.likes);
 
@@ -96,21 +84,6 @@ export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
     .filter(e => e.id !== entry.id && (e.diaryId === entry.diaryId || e.tags.some(t => entry.tags.includes(t))))
     .slice(0, 2);
 
-  // Submit main comment
-  const handleSubmitComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCommentText.trim()) return;
-    onAddComment(newCommentText.trim());
-    setNewCommentText('');
-  };
-
-  // Submit nested reply
-  const handleSubmitReply = (parentId: string) => {
-    if (!replyText.trim()) return;
-    onAddComment(replyText.trim(), parentId);
-    setReplyText('');
-    setReplyToId(null);
-  };
 
   // Parse markdown-style content simple helper for rich display
   const renderFormattedContent = (content: string) => {
@@ -432,129 +405,6 @@ export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
           </div>
         )}
 
-        {/* COMMENTS / READER NOTES SECTION */}
-        <section className="mt-16 pt-10 border-t border-[#2d211a]">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="font-cinzel text-2xl font-bold text-[#f3efe6] flex items-center space-x-2">
-              <MessageSquare className="w-5 h-5 text-[#d4af37]" />
-              <span>Reader Notes & Reflections ({comments.length})</span>
-            </h3>
-          </div>
-
-          {/* New Comment Input Form */}
-          <form onSubmit={handleSubmitComment} className="mb-10 p-5 rounded-2xl bg-[#18120e] border border-[#3a2a1e]">
-            <label className="block text-xs font-mono text-[#d4af37] mb-2">
-              Leave a note for Mahi 🦢
-            </label>
-            <textarea
-              rows={3}
-              value={newCommentText}
-              onChange={(e) => setNewCommentText(e.target.value)}
-              placeholder="Share your thoughts, questions, or reflections on this page..."
-              className="w-full bg-[#121013] border border-[#3a2d24] rounded-xl p-3 text-xs sm:text-sm text-[#f3efe6] placeholder-[#8c8075] focus:outline-none focus:border-[#d4af37]"
-            />
-            <div className="mt-3 flex items-center justify-between text-xs text-[#a3978c]">
-              <span>Posting as Reader Scholar</span>
-              <button
-                type="submit"
-                disabled={!newCommentText.trim()}
-                className="px-4 py-2 rounded-lg bg-[#2b1e16] text-[#e5c158] border border-[#d4af37]/60 hover:bg-[#38281d] transition-all disabled:opacity-50 font-sans-body font-semibold flex items-center space-x-1.5 cursor-pointer"
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>Publish Note</span>
-              </button>
-            </div>
-          </form>
-
-          {/* Comments List */}
-          {comments.length === 0 ? (
-            <div className="text-center py-8 text-[#a3978c] font-serif-title italic text-sm">
-              "No notes written on this page yet. Be the first reader to leave a reflection."
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {comments.filter(c => !c.parentId).map((comment) => (
-                <div key={comment.id} className="p-4 sm:p-5 rounded-xl bg-[#18120e] border border-[#2d211a]">
-                  
-                  {/* Author Header */}
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-3">
-                      <img src={comment.authorAvatar} alt={comment.authorName} className="w-8 h-8 rounded-full object-cover border border-[#d4af37]/40" />
-                      <div>
-                        <span className="font-serif-title font-bold text-sm text-[#f3efe6] flex items-center space-x-1.5">
-                          <span>{comment.authorName}</span>
-                          {comment.authorRole === 'Admin' && (
-                            <span className="px-1.5 py-0.2 rounded bg-[#d4af37] text-[#121013] text-[9px] font-mono font-bold uppercase">Author</span>
-                          )}
-                        </span>
-                        <span className="text-[11px] text-[#a3978c] block">{comment.createdAt}</span>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => onLikeComment(comment.id)}
-                      className="flex items-center space-x-1 text-xs text-[#a3978c] hover:text-[#d4af37] transition-colors"
-                    >
-                      <ThumbsUp className="w-3.5 h-3.5" />
-                      <span>{comment.likes}</span>
-                    </button>
-                  </div>
-
-                  <p className="text-xs sm:text-sm text-[#c5b8ab] font-sans-body leading-relaxed my-2">
-                    {comment.content}
-                  </p>
-
-                  {/* Reply Action */}
-                  <div className="mt-2 text-right">
-                    <button
-                      onClick={() => setReplyToId(replyToId === comment.id ? null : comment.id)}
-                      className="text-[11px] text-[#d4af37] hover:underline font-mono"
-                    >
-                      {replyToId === comment.id ? 'Cancel Reply' : 'Reply'}
-                    </button>
-                  </div>
-
-                  {/* Nested Reply Box */}
-                  {replyToId === comment.id && (
-                    <div className="mt-3 pl-4 border-l-2 border-[#d4af37]">
-                      <input
-                        type="text"
-                        value={replyText}
-                        onChange={(e) => setReplyText(e.target.value)}
-                        placeholder="Write a reply..."
-                        className="w-full bg-[#121013] border border-[#3a2d24] rounded-lg p-2 text-xs text-[#f3efe6] mb-2 focus:outline-none focus:border-[#d4af37]"
-                      />
-                      <button
-                        onClick={() => handleSubmitReply(comment.id)}
-                        className="px-3 py-1 bg-[#2b1e16] text-[#d4af37] text-xs rounded-md border border-[#d4af37]/40 font-mono"
-                      >
-                        Submit Reply
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Nested Replies Rendering */}
-                  {comments.filter(c => c.parentId === comment.id).map(reply => (
-                    <div key={reply.id} className="mt-4 pl-4 sm:pl-6 border-l-2 border-[#3a2a1e] space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <CornerDownRight className="w-3.5 h-3.5 text-[#d4af37]" />
-                        <span className="font-serif-title font-bold text-xs text-[#f3efe6]">{reply.authorName}</span>
-                        {reply.authorRole === 'Admin' && (
-                          <span className="px-1 py-0.2 rounded bg-[#d4af37] text-[#121013] text-[8px] font-mono font-bold">Author</span>
-                        )}
-                        <span className="text-[10px] text-[#a3978c]">{reply.createdAt}</span>
-                      </div>
-                      <p className="text-xs text-[#c5b8ab] leading-relaxed pl-5">
-                        {reply.content}
-                      </p>
-                    </div>
-                  ))}
-
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
 
       </article>
 

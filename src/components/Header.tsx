@@ -61,29 +61,6 @@ export const Header: React.FC<HeaderProps> = ({
         { label: 'Library', page: 'library' },
         { label: 'Entries', page: 'entries' },
       ]
-    },
-    {
-      label: 'Community',
-      items: [
-        { label: 'Comments', page: 'comments' },
-        { label: 'Readers', page: 'readers' },
-        { label: 'Newsletter', page: 'newsletter' },
-      ]
-    },
-    {
-      label: 'Insights',
-      items: [
-        { label: 'Analytics', page: 'analytics' },
-        { label: 'Statistics', page: 'statistics' },
-      ]
-    },
-    {
-      label: 'Config',
-      items: [
-        { label: 'Settings', page: 'settings' },
-        { label: 'Appearance', page: 'appearance' },
-        { label: 'Integrations', page: 'integrations' },
-      ]
     }
   ];
 
@@ -212,13 +189,8 @@ export const Header: React.FC<HeaderProps> = ({
               className="flex items-center gap-1.5 text-[#c5b8ab] hover:text-[#d4af37] transition-colors text-sm font-sans cursor-pointer group"
               title={user.role === 'Admin' ? 'Author Dashboard' : 'Reader Dashboard'}
             >
-              <span className="w-6 h-6 rounded-full overflow-hidden border border-[#d4af37]/40 flex items-center justify-center bg-[#1e1713]">
-                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-              </span>
-              <span className="hidden sm:inline max-w-[120px] truncate">{user.name}</span>
-              <span className="hidden sm:inline text-[10px] uppercase tracking-widest text-[#d4af37]/70 font-mono">
-                {user.role === 'Admin' ? 'Author' : 'Reader'}
-              </span>
+              <User className="w-4 h-4" />
+              <span className="hidden sm:inline">Dashboard</span>
             </button>
             <button
               onClick={onSignOut}

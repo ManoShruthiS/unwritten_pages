@@ -45,25 +45,13 @@ export interface JournalEntry {
   previewParagraph: string;
   content: string; // Rich Markdown content
   likes: number;
-  commentsCount: number;
+
   isPinned?: boolean;
   isFeatured?: boolean;
   slug: string;
 }
 
-export interface Comment {
-  id: string;
-  entryId: string;
-  authorName: string;
-  authorAvatar: string;
-  authorRole?: 'Admin' | 'Reader';
-  content: string;
-  createdAt: string;
-  likes: number;
-  parentId?: string | null;
-  replies?: Comment[];
-  isReported?: boolean;
-}
+
 
 export interface UserProfile {
   id: string;

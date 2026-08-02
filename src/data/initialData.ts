@@ -1,4 +1,4 @@
-import { Diary, JournalEntry, Comment } from '../types';
+import { Diary, JournalEntry } from '../types';
 
 export const INITIAL_DIARIES: Diary[] = [
   {
@@ -164,7 +164,7 @@ console.log(initiateJourney("Mahi 🦢"));
 > **Note on Intention**: As I turn to page 2, the goal isn't perfection; it's consistency.
     `,
     likes: 42,
-    commentsCount: 3,
+
     isPinned: true,
     slug: 'the-beginning'
   },
@@ -208,7 +208,7 @@ git rebase origin/main
 > **Insight**: When you encounter a merge conflict, Git isn't breaking—it's humbly admitting: *"I value your intent too much to guess which version matters more."*
     `,
     likes: 38,
-    commentsCount: 2,
+
     slug: 'understanding-git'
   },
   {
@@ -262,7 +262,7 @@ export function useReadingProgress() {
 > "A project isn't finished when there is nothing left to add, but when there is nothing left to take away."
     `,
     likes: 54,
-    commentsCount: 5,
+
     isFeatured: true,
     slug: 'building-my-first-project'
   },
@@ -301,7 +301,7 @@ Looking back over the past few weeks, the code that broke taught me tenfold more
 > "Experience is simply the name we give our mistakes." — Oscar Wilde
     `,
     likes: 49,
-    commentsCount: 4,
+
     slug: 'mistakes-that-made-me-better'
   },
   {
@@ -345,7 +345,7 @@ print(f"Semantic Alignment: {cosine_similarity(vec_king, vec_queen):.4f}")
 > **Observation**: The magic of LLMs isn't that they know everything—it's that they have synthesized a map of human thought.
     `,
     likes: 67,
-    commentsCount: 6,
+
     slug: 'spark-of-generative-intelligence'
   },
   {
@@ -391,7 +391,7 @@ def read_journal_pages(file_path):
 > "Simple is better than complex. Readability counts." — The Zen of Python
     `,
     likes: 31,
-    commentsCount: 1,
+
     slug: 'decorators-and-generator-elegance'
   },
   {
@@ -419,47 +419,8 @@ When we create spaces like *The Unwritten Pages*, we build a haven away from the
 > "Reading is to the mind what exercise is to the body." — Joseph Addison
     `,
     likes: 89,
-    commentsCount: 8,
+
     isFeatured: true,
     slug: 'on-solitude-books-and-unhurried-learning'
   }
 ];
-
-export const INITIAL_COMMENTS: Comment[] = [
-  {
-    id: 'comm-1',
-    entryId: 'ch-001',
-    authorName: 'Evelyn Reed',
-    authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-    authorRole: 'Reader',
-    content: 'This captured the feeling of starting out so eloquently! The dark library aesthetics suit your writing perfectly, Mahi.',
-    createdAt: 'July 11, 2026',
-    likes: 12,
-    parentId: null,
-    replies: [
-      {
-        id: 'comm-1-reply',
-        entryId: 'ch-001',
-        authorName: 'Mahi 🦢',
-        authorAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80',
-        authorRole: 'Admin',
-        content: 'Thank you, Evelyn! Keeping that sense of wonder alive is what drives every page in this library.',
-        createdAt: 'July 11, 2026',
-        likes: 18,
-        parentId: 'comm-1'
-      }
-    ]
-  },
-  {
-    id: 'comm-2',
-    entryId: 'ch-003',
-    authorName: 'Julian Vance',
-    authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
-    authorRole: 'Reader',
-    content: 'The custom hook for reading progress is super neat! Storing this in my bookmarks.',
-    createdAt: 'July 22, 2026',
-    likes: 9,
-    parentId: null
-  }
-];
-

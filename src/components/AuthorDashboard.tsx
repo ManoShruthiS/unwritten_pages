@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Diary, JournalEntry, Comment } from '../types';
+import { Diary, JournalEntry } from '../types';
 import { renderDiaryIcon } from './LibraryShelves';
+import * as LucideIcons from 'lucide-react';
 import {
   BookOpen, Plus, Edit3, Trash2, BarChart2, Eye, Heart,
   Users, Sparkles, Save, Check, FileText, Image, Tag, Clock,
@@ -15,18 +16,27 @@ import {
   AlignLeft, Type, Code, ImageIcon
 } from 'lucide-react';
 
+const COVER_COLORS = [
+  '#2b1b17', '#1c2e3b', '#1c3b28', '#3b201c', '#2d1c3b',
+  '#1f1f2e', '#4a2511', '#243a46', '#3d1627', '#172418'
+];
+
+const AVAILABLE_ICONS = [
+  'BookOpen', 'Code', 'Sparkles', 'Terminal', 'Coffee', 'Cpu', 'Feather', 'Compass', 'Flame', 'PenTool',
+  'Activity', 'Anchor', 'Aperture', 'Archive', 'Award', 'Battery', 'Bell', 'Camera', 'Cast', 'Cloud',
+  'Command', 'Database', 'Disc', 'Droplet', 'Eye', 'Film', 'Flag', 'Folder', 'Gift', 'Globe',
+  'Headphones', 'Heart', 'Hexagon', 'Image', 'Inbox', 'Key', 'Layers', 'Layout', 'LifeBuoy', 'Link',
+  'Lock', 'Map', 'MessageSquare', 'Mic', 'Monitor', 'Moon', 'Music', 'Navigation', 'Package', 'Paperclip',
+  'PieChart', 'Play', 'Power', 'Printer', 'Radio', 'RefreshCw', 'Save', 'Scissors', 'Search',
+  'Send', 'Server', 'Settings', 'Shield', 'ShoppingBag', 'Smartphone', 'Speaker', 'Star', 'Sun', 'Tablet',
+  'Tag', 'Target', 'Thermometer', 'ThumbsUp', 'Tool', 'Trash2', 'TrendingUp', 'Truck', 'Tv', 'Umbrella',
+  'Unlock', 'Upload', 'User', 'Video', 'Voicemail', 'Volume2', 'Watch', 'Wifi', 'Wind', 'Zap',
+  'ZoomIn', 'Focus', 'Gamepad2', 'Glasses', 'KeyRound', 'Laptop', 'Leaf', 'Lightbulb', 'Magnet', 'Mail'
+];
+
 interface AuthorDashboardProps {
   diaries: Diary[];
   entries: JournalEntry[];
-  comments: Comment[];
-  stats: {
-    diariesCount: number;
-    entriesCount: number;
-    totalLikes: number;
-    totalViews: number;
-    followersCount: number;
-    subscribersCount: number;
-  };
   authorName: string;
   onCreateDiary: (diaryData: Partial<Diary>) => void;
   onDeleteDiary: (diaryId: string) => void;
@@ -34,7 +44,7 @@ interface AuthorDashboardProps {
   onUpdateEntry: (entryId: string, entryData: Partial<JournalEntry>) => void;
   onTogglePinDiary: (diaryId: string) => void;
   onDeleteEntry: (entryId: string) => void;
-  onDeleteComment: (commentId: string) => void;
+  onUpdateDiary: (diaryId: string, data: Partial<Diary>) => void;
   onClose: () => void;
   onSignOut: () => void;
   activePage: string;
@@ -42,97 +52,25 @@ interface AuthorDashboardProps {
 }
 
 type ActivePage =
-  | 'dashboard'
   | 'library'
   | 'entries'
   | 'drafts'
   | 'media'
-  | 'comments'
-  | 'readers'
-  | 'newsletter'
-  | 'analytics'
-  | 'statistics'
-  | 'settings'
-  | 'appearance'
-  | 'integrations'
   | 'write';
 
-// Tiny sparkline bar chart component
-const SparkBar: React.FC<{ data: number[]; color?: string }> = ({ data, color = '#d4af37' }) => {
-  const max = Math.max(...data, 1);
-  return (
-    <div className="flex items-end gap-[2px] h-10">
-      {data.map((v, i) => (
-        <div
-          key={i}
-          className="flex-1 rounded-sm opacity-80"
-          style={{
-            height: `${Math.max(8, (v / max) * 40)}px`,
-            backgroundColor: color,
-            opacity: i === data.length - 1 ? 1 : 0.4 + (i / data.length) * 0.5
-          }}
-        />
-      ))}
-    </div>
-  );
-};
 
-// Mini line chart
-const MiniLineChart: React.FC<{ data: number[]; color?: string }> = ({ data, color = '#d4af37' }) => {
-  const max = Math.max(...data, 1);
-  const min = Math.min(...data);
-  const range = max - min || 1;
-  const w = 200;
-  const h = 60;
-  const pts = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * w;
-    const y = h - ((v - min) / range) * (h - 8) - 4;
-    return `${x},${y}`;
-  });
-  return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-16 overflow-visible">
-      <defs>
-        <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.3" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <polyline
-        points={pts.join(' ')}
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-      {/* Fill area */}
-      <polygon
-        points={`0,${h} ${pts.join(' ')} ${w},${h}`}
-        fill="url(#lineGrad)"
-      />
-      {/* Dots */}
-      {data.map((v, i) => {
-        const x = (i / (data.length - 1)) * w;
-        const y = h - ((v - min) / range) * (h - 8) - 4;
-        return <circle key={i} cx={x} cy={y} r="3" fill={color} />;
-      })}
-    </svg>
-  );
-};
 
 export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
   diaries,
   entries,
-  comments,
-  stats,
   authorName,
   onCreateDiary,
   onDeleteDiary,
   onCreateEntry,
   onUpdateEntry,
+  onUpdateDiary,
   onTogglePinDiary,
   onDeleteEntry,
-  onDeleteComment,
   onClose,
   onSignOut,
   activePage,
@@ -154,6 +92,29 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
     { id: '3', title: 'Building in the Dark', updated: '1w ago', words: 1240 },
   ]);
 
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    type: 'diary' | 'entry' | 'comment' | 'draft' | 'vault';
+    id: string;
+    title: string;
+  } | null>(null);
+
+  const confirmDelete = (type: 'diary' | 'entry' | 'comment' | 'draft' | 'vault', id: string, title: string) => {
+    setDeleteConfirmation({ isOpen: true, type, id, title });
+  };
+
+  const executeDelete = () => {
+    if (!deleteConfirmation) return;
+    const { type, id } = deleteConfirmation;
+    switch (type) {
+      case 'diary': onDeleteDiary(id); break;
+      case 'entry': onDeleteEntry(id); break;
+      case 'draft': setDraftsList(prev => prev.filter(d => d.id !== id)); break;
+      case 'vault': setVaultImages(prev => prev.filter(img => img !== id)); break;
+    }
+    setDeleteConfirmation(null);
+  };
+
   // New Entry Form State
   const [entryDiaryId, setEntryDiaryId] = useState(diaries[0]?.id || '');
   const [entryTitle, setEntryTitle] = useState('');
@@ -167,25 +128,22 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
   // New Diary Form State
   const [newDiaryTitle, setNewDiaryTitle] = useState('');
   const [newDiaryDesc, setNewDiaryDesc] = useState('');
-  const [newDiaryColor, setNewDiaryColor] = useState('#2b1b17');
-  const [newDiaryIcon, setNewDiaryIcon] = useState('Code');
+  const [newDiaryColor, setNewDiaryColor] = useState(COVER_COLORS[0]);
+  const [newDiaryIcon, setNewDiaryIcon] = useState(AVAILABLE_ICONS[0]);
+  const [editingVolumeId, setEditingVolumeId] = useState<string | null>(null);
+  
+  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
+  const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
 
   // Derived
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : hour < 21 ? 'Good evening' : 'Late night musings';
   const topEntries = [...entries].sort((a, b) => b.likes - a.likes).slice(0, 5);
   const maxLikes = Math.max(1, ...topEntries.map(e => e.likes));
-  const recentComments = [...comments].slice(-5).reverse();
   const filteredEntries = entries.filter(e =>
     e.title.toLowerCase().includes(entriesQuery.toLowerCase()) ||
     e.tags?.some(t => t.toLowerCase().includes(entriesQuery.toLowerCase()))
   );
-
-  // Fake weekly data for chart
-  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const viewsData = [42, 65, 38, 78, 55, 90, 67];
-  const visitorsData = [30, 50, 25, 60, 40, 72, 50];
-  const writingStreak = 12;
 
   const handleEntrySubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -236,15 +194,34 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
   const handleCreateDiarySubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newDiaryTitle.trim()) return;
-    onCreateDiary({
+    
+    const payload = {
       title: newDiaryTitle.trim(),
       description: newDiaryDesc.trim(),
       coverColor: newDiaryColor,
       icon: newDiaryIcon,
-    });
+    };
+
+    if (editingVolumeId) {
+      onUpdateDiary(editingVolumeId, payload);
+    } else {
+      onCreateDiary(payload);
+    }
+    
     setNewDiaryTitle('');
     setNewDiaryDesc('');
-    setActivePage('library');
+    setNewDiaryColor(COVER_COLORS[0]);
+    setNewDiaryIcon(AVAILABLE_ICONS[0]);
+    setEditingVolumeId(null);
+  };
+
+  const handleEditDiary = (d: Diary) => {
+    setEditingVolumeId(d.id);
+    setNewDiaryTitle(d.title);
+    setNewDiaryDesc(d.description || '');
+    setNewDiaryColor(d.coverColor || COVER_COLORS[0]);
+    setNewDiaryIcon(d.icon || AVAILABLE_ICONS[0]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -408,9 +385,11 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
           {activePage === 'library' && (
             <div className="p-5 max-w-5xl">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Create Diary */}
-                <div className="bg-[#16120e] border border-[#2a1e15] rounded-xl p-5">
-                  <h2 className="font-cinzel text-sm font-bold text-[#f0e8d8] mb-4">Create New Diary Volume</h2>
+                {/* Create/Edit Diary */}
+                <div className="bg-[#16120e] border border-[#2a1e15] rounded-xl p-5 self-start">
+                  <h2 className="font-cinzel text-sm font-bold text-[#f0e8d8] mb-4">
+                    {editingVolumeId ? 'Update Volume Details' : 'Create New Diary Volume'}
+                  </h2>
                   <form onSubmit={handleCreateDiarySubmit} className="space-y-3">
                     <div>
                       <label className="block text-[10px] font-mono text-[#d4af37] mb-1">Diary Title</label>
@@ -432,46 +411,95 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
                         className="w-full bg-[#110e0b] border border-[#2a1e15] rounded-lg p-2 text-xs text-[#e8e0d5] focus:border-[#d4af37] outline-none resize-none"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
+                    <div className="grid grid-cols-2 gap-3 relative">
+                      <div className="relative">
                         <label className="block text-[10px] font-mono text-[#d4af37] mb-1">Cover Color</label>
-                        <select
-                          value={newDiaryColor}
-                          onChange={e => setNewDiaryColor(e.target.value)}
-                          className="w-full bg-[#110e0b] border border-[#2a1e15] rounded-lg p-2 text-[10px] text-[#e8e0d5]"
+                        <button
+                          type="button"
+                          onClick={() => { setIsColorPickerOpen(!isColorPickerOpen); setIsIconPickerOpen(false); }}
+                          className="w-full bg-[#110e0b] border border-[#2a1e15] rounded-lg p-2 flex items-center gap-2 text-xs text-[#e8e0d5] hover:border-[#d4af37] transition-colors"
                         >
-                          <option value="#2b1b17">Mahogany</option>
-                          <option value="#1c2e3b">Sapphire</option>
-                          <option value="#1c3b28">Emerald</option>
-                          <option value="#3b201c">Chestnut</option>
-                          <option value="#2d1c3b">Amethyst</option>
-                          <option value="#1f1f2e">Onyx</option>
-                        </select>
+                          <div className="w-4 h-4 rounded-full border border-black/50" style={{ backgroundColor: newDiaryColor }}></div>
+                          <span className="flex-1 text-left">{newDiaryColor}</span>
+                        </button>
+                        
+                        {isColorPickerOpen && (
+                          <div className="absolute top-full left-0 mt-1 p-2 bg-[#16120e] border border-[#3a2a1a] rounded-lg shadow-xl z-50 w-full grid grid-cols-5 gap-2">
+                            {COVER_COLORS.map(color => (
+                              <button
+                                key={color}
+                                type="button"
+                                onClick={() => { setNewDiaryColor(color); setIsColorPickerOpen(false); }}
+                                className={`w-full aspect-square rounded-full border-2 transition-all hover:scale-110 ${newDiaryColor === color ? 'border-[#d4af37]' : 'border-transparent'}`}
+                                style={{ backgroundColor: color }}
+                                title={color}
+                              />
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <div>
+                      
+                      <div className="relative">
                         <label className="block text-[10px] font-mono text-[#d4af37] mb-1">Icon</label>
-                        <select
-                          value={newDiaryIcon}
-                          onChange={e => setNewDiaryIcon(e.target.value)}
-                          className="w-full bg-[#110e0b] border border-[#2a1e15] rounded-lg p-2 text-[10px] text-[#e8e0d5]"
+                        <button
+                          type="button"
+                          onClick={() => { setIsIconPickerOpen(!isIconPickerOpen); setIsColorPickerOpen(false); }}
+                          className="w-full bg-[#110e0b] border border-[#2a1e15] rounded-lg p-2 flex items-center gap-2 text-xs text-[#e8e0d5] hover:border-[#d4af37] transition-colors"
                         >
-                          <option value="Code">Code</option>
-                          <option value="Sparkles">Sparkles</option>
-                          <option value="Terminal">Terminal</option>
-                          <option value="Coffee">Coffee</option>
-                          <option value="Cpu">Cpu</option>
-                          <option value="Feather">Feather</option>
-                          <option value="Compass">Compass</option>
-                        </select>
+                          <div className="text-[#d4af37]">
+                            {renderDiaryIcon(newDiaryIcon, "w-4 h-4")}
+                          </div>
+                          <span className="flex-1 text-left truncate">{newDiaryIcon}</span>
+                        </button>
+
+                        {isIconPickerOpen && (
+                          <div className="absolute top-full right-0 mt-1 p-3 bg-[#16120e] border border-[#3a2a1a] rounded-xl shadow-xl z-50 w-[280px] h-[300px] flex flex-col">
+                            <div className="text-xs font-mono text-[#d4af37] mb-2 flex justify-between items-center">
+                              <span>Select an Icon</span>
+                              <button type="button" onClick={() => setIsIconPickerOpen(false)}><X className="w-4 h-4 text-[#8a7a6a] hover:text-rose-400"/></button>
+                            </div>
+                            <div className="flex-1 overflow-y-auto grid grid-cols-6 gap-1 pr-1 custom-scrollbar">
+                              {AVAILABLE_ICONS.map(iconName => (
+                                <button
+                                  key={iconName}
+                                  type="button"
+                                  onClick={() => { setNewDiaryIcon(iconName); setIsIconPickerOpen(false); }}
+                                  className={`aspect-square rounded flex items-center justify-center transition-all hover:bg-[#2b1e16] hover:text-[#d4af37] ${newDiaryIcon === iconName ? 'bg-[#2b1e16] text-[#d4af37] border border-[#d4af37]/30' : 'text-[#8a7a6a]'}`}
+                                  title={iconName}
+                                >
+                                  {renderDiaryIcon(iconName, "w-4 h-4")}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <button
-                      type="submit"
-                      disabled={!newDiaryTitle.trim()}
-                      className="w-full py-2.5 bg-[#2b1e16] border border-[#d4af37] text-[#e5c158] rounded-xl font-cinzel font-bold text-xs hover:bg-[#38281d] transition-all cursor-pointer disabled:opacity-50"
-                    >
-                      Bind New Volume
-                    </button>
+                    
+                    <div className="flex gap-2 pt-2" onClick={() => { setIsColorPickerOpen(false); setIsIconPickerOpen(false); }}>
+                      {editingVolumeId && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingVolumeId(null);
+                            setNewDiaryTitle('');
+                            setNewDiaryDesc('');
+                            setNewDiaryColor(COVER_COLORS[0]);
+                            setNewDiaryIcon(AVAILABLE_ICONS[0]);
+                          }}
+                          className="w-1/3 py-2.5 bg-[#1c1814] border border-[#2a1e15] text-[#8a7a6a] rounded-xl font-cinzel font-bold text-xs hover:text-[#f0e8d8] transition-all cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                      <button
+                        type="submit"
+                        disabled={!newDiaryTitle.trim()}
+                        className={`${editingVolumeId ? 'w-2/3' : 'w-full'} py-2.5 bg-[#2b1e16] border border-[#d4af37] text-[#e5c158] rounded-xl font-cinzel font-bold text-xs hover:bg-[#38281d] transition-all cursor-pointer disabled:opacity-50`}
+                      >
+                        {editingVolumeId ? 'Save Changes' : 'Bind New Volume'}
+                      </button>
+                    </div>
                   </form>
                 </div>
 
@@ -480,42 +508,79 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
                   <h2 className="font-cinzel text-sm font-bold text-[#f0e8d8] mb-4">
                     Existing Volumes ({diaries.length})
                   </h2>
-                  <div className="space-y-2.5 max-h-[400px] overflow-y-auto pr-1">
-                    {diaries.map(d => (
-                      <div key={d.id} className="p-3 rounded-xl bg-[#110e0b] border border-[#2a1e15] flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div
-                            className="w-8 h-10 rounded flex items-center justify-center text-[#d4af37] flex-shrink-0"
-                            style={{ backgroundColor: d.coverColor }}
-                          >
-                            {renderDiaryIcon(d.icon, 'w-4 h-4')}
+                  <div className="flex flex-col gap-16 pt-6 pb-12 max-h-[500px] overflow-y-auto px-6">
+                    {diaries.length > 0 ? (
+                      Array.from({ length: Math.ceil(diaries.length / 4) }, (_, i) => diaries.slice(i * 4, i * 4 + 4)).map((shelf, shelfIdx) => (
+                        <div key={shelfIdx} className="relative w-full">
+                          {/* Shelf books */}
+                          <div className="grid grid-cols-4 justify-items-center px-2 relative z-10 w-full">
+                            {shelf.map(d => (
+                              <div key={d.id} className="relative group flex flex-col items-center">
+                                {/* Book Spine */}
+                                <div 
+                                  className="relative w-12 h-32 rounded-r-md rounded-l-[1px] shadow-[3px_0_8px_rgba(0,0,0,0.5)] flex flex-col items-center justify-between py-2.5 border-l-[2px] border-black/40 overflow-hidden cursor-pointer transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-[4px_8px_15px_rgba(0,0,0,0.6)]"
+                                  style={{ backgroundColor: d.coverColor || '#2b1e16' }}
+                                >
+                                  {/* Page Edge Illusion (right side) */}
+                                  <div className="absolute top-0 bottom-0 right-0 w-[2px] bg-white/20"></div>
+                                  {/* Hinge indentation */}
+                                  <div className="absolute top-0 bottom-0 left-1 w-[1px] bg-black/20"></div>
+
+                                  {/* Icon */}
+                                  <div className="text-white/40 drop-shadow-md z-0">
+                                    {renderDiaryIcon(d.icon, 'w-4 h-4')}
+                                  </div>
+                                  
+                                  {/* Spine Title */}
+                                  <div className="flex-1 flex items-center justify-center overflow-hidden w-full z-0 pt-1">
+                                    <span 
+                                      className="font-cinzel text-[9px] font-bold text-white/90 uppercase tracking-widest truncate max-h-[65px] drop-shadow-md"
+                                      style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
+                                    >
+                                      {d.title}
+                                    </span>
+                                  </div>
+                                  
+                                  {d.isPinned && <Pin className="w-2.5 h-2.5 text-[#e5c158] fill-[#e5c158] absolute top-2 right-2 drop-shadow-md z-0" />}
+                                  
+                                  {/* Hover Actions Overlay */}
+                                  <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-1.5 transition-opacity z-10 backdrop-blur-[1px]">
+                                    <button 
+                                      onClick={(e) => { e.stopPropagation(); handleEditDiary(d); }} 
+                                      className="p-1.5 rounded-full bg-[#1c1814]/90 text-[#d4af37] hover:bg-[#2a1e15] border border-[#d4af37]/30 transition-transform hover:scale-110"
+                                      title="Edit Volume"
+                                    >
+                                      <Pencil className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button 
+                                      onClick={(e) => { e.stopPropagation(); onTogglePinDiary(d.id); }} 
+                                      className="p-1.5 rounded-full bg-[#1c1814]/90 text-[#e5c158] hover:bg-[#2a1e15] border border-[#d4af37]/30 transition-transform hover:scale-110"
+                                      title={d.isPinned ? "Unpin" : "Pin"}
+                                    >
+                                      <Pin className={`w-3.5 h-3.5 ${d.isPinned ? 'fill-[#e5c158]' : ''}`} />
+                                    </button>
+                                    <button 
+                                      onClick={(e) => { e.stopPropagation(); confirmDelete('diary', d.id, d.title); }} 
+                                      className="p-1.5 rounded-full bg-[#1c1814]/90 text-rose-400 hover:bg-rose-950/80 border border-rose-900/50 transition-transform hover:scale-110"
+                                      title="Delete"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                </div>
+                                {/* Page Count (hanging below the shelf) */}
+                                <span className="absolute -bottom-7 text-[9px] text-[#6a5a4a] font-mono">{d.entryCount} pgs</span>
+                              </div>
+                            ))}
                           </div>
-                          <div className="min-w-0">
-                            <h4 className="font-cinzel text-xs font-bold text-[#f0e8d8] truncate flex items-center gap-1">
-                              {d.title}
-                              {d.isPinned && <Pin className="w-2.5 h-2.5 text-[#e5c158] fill-[#e5c158] flex-shrink-0" />}
-                            </h4>
-                            <span className="text-[9px] text-[#6a5a4a]">{d.entryCount} pages</span>
-                          </div>
+                          {/* Solid Shelf Board */}
+                          <div className="absolute bottom-0 left-0 right-0 h-3 bg-[#2a1e15] rounded-sm shadow-[0_5px_15px_rgba(0,0,0,0.5)] border-t border-[#3a2a1a] z-0"></div>
                         </div>
-                        <div className="flex gap-1.5 flex-shrink-0">
-                          <button
-                            onClick={() => onTogglePinDiary(d.id)}
-                            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${d.isPinned ? 'text-[#e5c158]' : 'text-[#5a4a3a] hover:text-[#e5c158]'}`}
-                          >
-                            <Pin className={`w-3.5 h-3.5 ${d.isPinned ? 'fill-[#e5c158]' : ''}`} />
-                          </button>
-                          <button
-                            onClick={() => onDeleteDiary(d.id)}
-                            className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-950/40 transition-colors cursor-pointer"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-10">
+                        <p className="text-xs text-[#5a4a3a] italic font-serif-title">No volumes resting on the shelf yet.</p>
                       </div>
-                    ))}
-                    {diaries.length === 0 && (
-                      <p className="text-xs text-[#5a4a3a] italic font-serif-title text-center py-6">No volumes yet.</p>
                     )}
                   </div>
                 </div>
@@ -561,7 +626,7 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={() => onDeleteEntry(e.id)}
+                          onClick={() => confirmDelete('entry', e.id, e.title)}
                           className="p-2 rounded-lg bg-rose-950/30 text-rose-400 border border-rose-800/30 hover:bg-rose-950/60 transition-colors cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -579,187 +644,7 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
             </div>
           )}
 
-          {/* ── COMMENTS ─────────────────────────────────────────── */}
-          {activePage === 'comments' && (
-            <div className="p-5 max-w-4xl">
-              <div className="bg-[#16120e] border border-[#2a1e15] rounded-xl p-5">
-                <h2 className="font-cinzel text-sm font-bold text-[#f0e8d8] mb-4">
-                  Comments Moderation ({comments.length})
-                </h2>
-                <div className="space-y-3">
-                  {comments.map(c => (
-                    <div key={c.id} className="p-4 rounded-xl bg-[#110e0b] border border-[#2a1e15] flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#2b1e16] border border-[#3a2a1a] flex items-center justify-center text-xs font-bold text-[#d4af37] flex-shrink-0">
-                          {c.authorName[0]}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 text-xs font-bold text-[#f0e8d8]">
-                            <span>{c.authorName}</span>
-                            <span className="text-[9px] font-mono text-[#6a5a4a]">• {c.createdAt}</span>
-                          </div>
-                          <p className="text-xs text-[#9a8a7a] mt-1 leading-relaxed">{c.content}</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => onDeleteComment(c.id)}
-                        className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-950/40 transition-colors cursor-pointer flex-shrink-0"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                  {comments.length === 0 && (
-                    <p className="text-xs text-[#5a4a3a] italic font-serif-title text-center py-8">No comments yet.</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
 
-          {/* ── ANALYTICS ───────────────────────────────────────── */}
-          {activePage === 'analytics' && (
-            <div className="p-5 max-w-5xl space-y-5">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {[
-                  { label: 'Total Views', value: stats.totalViews.toLocaleString(), icon: Eye, color: '#38bdf8' },
-                  { label: 'Total Likes', value: stats.totalLikes.toLocaleString(), icon: Heart, color: '#f87171' },
-                  { label: 'Followers', value: stats.followersCount.toLocaleString(), icon: Users, color: '#34d399' },
-                  { label: 'Subscribers', value: stats.subscribersCount.toLocaleString(), icon: Mail, color: '#a78bfa' },
-                ].map(item => (
-                  <div key={item.label} className="bg-[#16120e] border border-[#2a1e15] rounded-xl p-5">
-                    <item.icon className="w-5 h-5 mb-2" style={{ color: item.color }} />
-                    <span className="block font-cinzel text-2xl font-bold text-[#f0e8d8]">{item.value}</span>
-                    <span className="text-[10px] text-[#6a5a4a]">{item.label}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <div className="bg-[#16120e] border border-[#2a1e15] rounded-xl p-5">
-                  <h3 className="font-cinzel text-sm font-bold text-[#f0e8d8] mb-4 flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-emerald-400" />
-                    Reader Applause by Entry
-                  </h3>
-                  <div className="space-y-3">
-                    {topEntries.map((e, idx) => (
-                      <div key={e.id}>
-                        <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="text-[#d4c5a8] truncate mr-3 flex items-center gap-1">
-                            <span className="text-[#d4af37] font-mono">{idx + 1}.</span>
-                            {e.title}
-                          </span>
-                          <span className="font-mono text-[#6a5a4a] flex-shrink-0">{e.likes} ♥</span>
-                        </div>
-                        <div className="h-1.5 rounded-full bg-[#2a1e15] overflow-hidden">
-                          <div
-                            className="h-full rounded-full bg-gradient-to-r from-[#6b2a1c] to-[#d4af37]"
-                            style={{ width: `${Math.max(6, (e.likes / maxLikes) * 100)}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="bg-[#16120e] border border-[#2a1e15] rounded-xl p-5">
-                  <h3 className="font-cinzel text-sm font-bold text-[#f0e8d8] mb-4 flex items-center gap-2">
-                    <BarChart2 className="w-4 h-4 text-[#d4af37]" />
-                    Weekly Engagement
-                  </h3>
-                  <MiniLineChart data={viewsData} color="#d4af37" />
-                  <div className="flex justify-between mt-2">
-                    {weekDays.map(d => (
-                      <span key={d} className="text-[9px] text-[#5a4a3a]">{d}</span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── READERS ─────────────────────────────────────────── */}
-          {activePage === 'readers' && (
-            <div className="p-5 max-w-4xl">
-              <div className="bg-[#16120e] border border-[#2a1e15] rounded-xl p-5">
-                <h2 className="font-cinzel text-sm font-bold text-[#f0e8d8] mb-4 flex items-center gap-2">
-                  <Users className="w-4 h-4 text-[#d4af37]" />
-                  Readers
-                </h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-5">
-                  {[
-                    { label: 'Total Readers', value: stats.totalViews, color: '#d4af37' },
-                    { label: 'Followers', value: stats.followersCount, color: '#34d399' },
-                    { label: 'Subscribers', value: stats.subscribersCount, color: '#a78bfa' },
-                  ].map(s => (
-                    <div key={s.label} className="bg-[#110e0b] border border-[#2a1e15] rounded-xl p-4 text-center">
-                      <div className="font-cinzel text-2xl font-bold" style={{ color: s.color }}>{s.value}</div>
-                      <div className="text-[10px] text-[#6a5a4a] mt-1">{s.label}</div>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-[#5a4a3a] italic font-serif-title text-center py-6">
-                  Detailed reader profiles and management coming soon.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* ── NEWSLETTER ──────────────────────────────────────── */}
-          {activePage === 'newsletter' && (
-            <div className="p-5 max-w-4xl">
-              <div className="bg-[#16120e] border border-[#2a1e15] rounded-xl p-5">
-                <h2 className="font-cinzel text-sm font-bold text-[#f0e8d8] mb-4 flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-[#d4af37]" />
-                  Newsletter Management
-                </h2>
-                <div className="grid grid-cols-3 gap-4 mb-5">
-                  {[
-                    { label: 'Total Subscribers', value: stats.subscribersCount > 0 ? stats.subscribersCount * 20 : 380 },
-                    { label: 'New This Week', value: 12 },
-                    { label: 'Open Rate', value: '68%' },
-                  ].map(s => (
-                    <div key={s.label} className="bg-[#110e0b] border border-[#2a1e15] rounded-xl p-4 text-center">
-                      <div className="font-cinzel text-2xl font-bold text-[#d4af37]">{s.value}</div>
-                      <div className="text-[10px] text-[#6a5a4a] mt-1">{s.label}</div>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-[#5a4a3a] italic font-serif-title text-center py-6">
-                  Full newsletter composer and subscriber management coming soon.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* ── STATISTICS ──────────────────────────────────────── */}
-          {activePage === 'statistics' && (
-            <div className="p-5 max-w-5xl space-y-5">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {[
-                  { label: 'Diaries', value: stats.diariesCount, sparkData: [2, 3, 4, 4, 5, 5, stats.diariesCount] },
-                  { label: 'Entries', value: stats.entriesCount, sparkData: [10, 15, 20, 22, 25, 28, stats.entriesCount] },
-                  { label: 'Total Likes', value: stats.totalLikes, sparkData: [20, 35, 45, 60, 75, 90, stats.totalLikes] },
-                  { label: 'Comments', value: comments.length, sparkData: [1, 2, 4, 6, 8, 10, comments.length] },
-                ].map(s => (
-                  <div key={s.label} className="bg-[#16120e] border border-[#2a1e15] rounded-xl p-4">
-                    <div className="font-cinzel text-2xl font-bold text-[#f0e8d8] mb-1">{s.value}</div>
-                    <div className="text-[10px] text-[#6a5a4a] mb-3">{s.label}</div>
-                    <SparkBar data={s.sparkData} />
-                  </div>
-                ))}
-              </div>
-              <div className="bg-[#16120e] border border-[#2a1e15] rounded-xl p-5">
-                <h3 className="font-cinzel text-sm font-bold text-[#f0e8d8] mb-4">Growth Over Time</h3>
-                <MiniLineChart data={[10, 18, 24, 30, 45, 62, 80]} color="#d4af37" />
-                <div className="flex justify-between mt-2">
-                  {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'].map(m => (
-                    <span key={m} className="text-[9px] text-[#5a4a3a]">{m}</span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* ── DRAFTS ──────────────────────────────────────────── */}
           {(activePage === 'drafts') && (
@@ -783,7 +668,7 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button 
-                        onClick={() => setDraftsList(prev => prev.filter(d => d.id !== draft.id))}
+                        onClick={() => confirmDelete('draft', draft.id, draft.title)}
                         className="p-2 rounded-lg bg-rose-950/30 text-rose-400 transition-colors cursor-pointer hover:bg-rose-950/60"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -843,7 +728,7 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <button 
                           className="cursor-pointer"
-                          onClick={() => setVaultImages(prev => prev.filter(i => i !== imgUrl))}
+                          onClick={() => confirmDelete('vault', imgUrl, 'this image')}
                         >
                           <Trash2 className="w-4 h-4 text-rose-400 hover:text-rose-300" />
                         </button>
@@ -855,95 +740,7 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
             </div>
           )}
 
-          {/* ── SETTINGS ────────────────────────────────────────── */}
-          {activePage === 'settings' && (
-            <div className="p-5 max-w-2xl">
-              <div className="bg-[#16120e] border border-[#2a1e15] rounded-xl p-5 space-y-4">
-                <h2 className="font-cinzel text-sm font-bold text-[#f0e8d8]">Settings</h2>
-                {[
-                  { label: 'Display Name', value: authorName, type: 'text' },
-                  { label: 'Email', value: 'mahi@unwritten.pages', type: 'email' },
-                  { label: 'Bio', value: 'Writing my journey, one page at a time.', type: 'textarea' },
-                ].map(field => (
-                  <div key={field.label}>
-                    <label className="block text-[10px] font-mono text-[#d4af37] mb-1">{field.label}</label>
-                    {field.type === 'textarea' ? (
-                      <textarea
-                        defaultValue={field.value}
-                        rows={3}
-                        className="w-full bg-[#110e0b] border border-[#2a1e15] rounded-lg p-2.5 text-xs text-[#e8e0d5] focus:border-[#d4af37] outline-none resize-none"
-                      />
-                    ) : (
-                      <input
-                        type={field.type}
-                        defaultValue={field.value}
-                        className="w-full bg-[#110e0b] border border-[#2a1e15] rounded-lg p-2.5 text-xs text-[#e8e0d5] focus:border-[#d4af37] outline-none"
-                      />
-                    )}
-                  </div>
-                ))}
-                <button className="px-5 py-2.5 bg-[#2b1e16] border border-[#d4af37] text-[#d4af37] rounded-xl font-cinzel text-xs font-bold hover:bg-[#38281d] cursor-pointer transition-all">
-                  Save Changes
-                </button>
-              </div>
-            </div>
-          )}
 
-          {/* ── APPEARANCE ──────────────────────────────────────── */}
-          {activePage === 'appearance' && (
-            <div className="p-5 max-w-2xl">
-              <div className="bg-[#16120e] border border-[#2a1e15] rounded-xl p-5 space-y-4">
-                <h2 className="font-cinzel text-sm font-bold text-[#f0e8d8]">Appearance</h2>
-                <p className="text-xs text-[#6a5a4a] italic font-serif-title">
-                  Customize how your library looks to readers. Theme settings, font choices, and layout preferences.
-                </p>
-                <div className="grid grid-cols-3 gap-3">
-                  {['Dark Parchment', 'Midnight Ink', 'Sepia Warm'].map(theme => (
-                    <div key={theme} className="p-3 bg-[#110e0b] border border-[#2a1e15] rounded-xl text-center cursor-pointer hover:border-[#d4af37]/50 transition-colors">
-                      <div className="w-8 h-8 rounded-full bg-[#2b1e16] mx-auto mb-2 border border-[#d4af37]/30" />
-                      <p className="text-[10px] text-[#8a7a6a]">{theme}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── INTEGRATIONS ────────────────────────────────────── */}
-          {activePage === 'integrations' && (
-            <div className="p-5 max-w-3xl">
-              <div className="bg-[#16120e] border border-[#2a1e15] rounded-xl p-5">
-                <h2 className="font-cinzel text-sm font-bold text-[#f0e8d8] mb-4">Integrations</h2>
-                <div className="space-y-3">
-                  {[
-                    { name: 'Google Analytics', desc: 'Track visitors and page views', icon: BarChart2, connected: false },
-                    { name: 'RSS Feed', desc: 'Syndicate your entries', icon: Rss, connected: true },
-                    { name: 'Social Media', desc: 'Auto-share new entries', icon: AtSign, connected: false },
-                    { name: 'Mail Service', desc: 'Connect your email provider', icon: Mail, connected: false },
-                  ].map(s => (
-                    <div key={s.name} className="p-4 bg-[#110e0b] border border-[#2a1e15] rounded-xl flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-[#2b1e16] border border-[#3a2a1a] flex items-center justify-center">
-                          <s.icon className="w-4 h-4 text-[#d4af37]" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-[#d4c5a8]">{s.name}</p>
-                          <p className="text-[10px] text-[#6a5a4a]">{s.desc}</p>
-                        </div>
-                      </div>
-                      <button className={`px-3 py-1.5 text-[10px] rounded-lg border cursor-pointer transition-all ${
-                        s.connected
-                          ? 'border-emerald-800 text-emerald-400 bg-emerald-950/30 hover:bg-emerald-950/50'
-                          : 'border-[#3a2a1a] text-[#8a7a6a] hover:border-[#d4af37] hover:text-[#d4af37]'
-                      }`}>
-                        {s.connected ? 'Connected' : 'Connect'}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
 
         </div>
       </div>
@@ -998,6 +795,41 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmation && deleteConfirmation.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0d0d0d]/80 backdrop-blur-sm">
+          <div className="bg-[#16120e] border border-[#3a2a1a] rounded-xl w-full max-w-md shadow-2xl shadow-black/50 overflow-hidden transform transition-all">
+            <div className="p-6">
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-rose-950/30 text-rose-500 mb-4 mx-auto border border-rose-900/50">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-cinzel font-bold text-[#f0e8d8] text-center mb-2">Confirm Deletion</h3>
+              <p className="text-sm text-[#9a8a7a] text-center">
+                Are you sure you want to delete <span className="text-[#d4af37] font-semibold">"{deleteConfirmation.title}"</span>?<br/>
+                This action cannot be undone.
+              </p>
+            </div>
+            <div className="flex border-t border-[#2a1e15] bg-[#110e0b]">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmation(null)}
+                className="flex-1 px-4 py-3 text-sm font-semibold text-[#8a7a6a] hover:text-[#f0e8d8] hover:bg-[#1a1612] transition-colors cursor-pointer border-r border-[#2a1e15]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={executeDelete}
+                className="flex-1 px-4 py-3 text-sm font-semibold text-rose-500 hover:text-rose-400 hover:bg-rose-950/20 transition-colors cursor-pointer"
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

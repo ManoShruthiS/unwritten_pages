@@ -9,7 +9,6 @@ import { AuthorDashboard } from './components/AuthorDashboard';
 import { SearchModal } from './components/SearchModal';
 import { BookmarksDrawer } from './components/BookmarksDrawer';
 import { NotificationsModal } from './components/NotificationsModal';
-import { NewsletterModal } from './components/NewsletterModal';
 import { RSSModal } from './components/RSSModal';
 import { Footer } from './components/Footer';
 import { AboutView } from './components/AboutView';
@@ -17,8 +16,8 @@ import { ExploreView } from './components/ExploreView';
 import { LoginView } from './components/LoginView';
 import { ReaderDashboard } from './components/ReaderDashboard';
 
-import { Diary, JournalEntry, Comment, UserProfile, NotificationItem } from './types';
-import { INITIAL_DIARIES, INITIAL_ENTRIES, INITIAL_COMMENTS } from './data/initialData';
+import { Diary, JournalEntry, UserProfile, NotificationItem } from './types';
+import { INITIAL_DIARIES, INITIAL_ENTRIES } from './data/initialData';
 
 export default function App() {
   // Navigation & View State
@@ -30,15 +29,7 @@ export default function App() {
   // Data Stores
   const [diaries, setDiaries] = useState<Diary[]>(INITIAL_DIARIES);
   const [entries, setEntries] = useState<JournalEntry[]>(INITIAL_ENTRIES);
-  const [comments, setComments] = useState<Comment[]>(INITIAL_COMMENTS);
-  const [stats, setStats] = useState({
-    diariesCount: INITIAL_DIARIES.length,
-    entriesCount: INITIAL_ENTRIES.length,
-    totalLikes: INITIAL_ENTRIES.reduce((a, b) => a + b.likes, 0),
-    totalViews: 3820,
-    followersCount: 142,
-    subscribersCount: 18
-  });
+
 
   // User Profile & Preferences
   const [user, setUser] = useState<UserProfile>(() => {
@@ -85,7 +76,7 @@ export default function App() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isBookmarksOpen, setIsBookmarksOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [isNewsletterOpen, setIsNewsletterOpen] = useState(false);
+
   const [isRssOpen, setIsRssOpen] = useState(false);
 
   // Notifications Data
@@ -131,12 +122,7 @@ export default function App() {
       })
       .catch(() => {});
 
-    fetch('/api/stats')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.stats) setStats(data.stats);
-      })
-      .catch(() => {});
+
   }, []);
 
   // Keyboard shortcut for Cmd+K Search
@@ -229,15 +215,7 @@ export default function App() {
     setCurrentView('entry');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Fetch entry comments
-    fetch(`/api/comments/${entry.id}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.comments) {
-          setComments(data.comments);
-        }
-      })
-      .catch(() => {});
+    // Comments feature removed
   };
 
   const handleRandomEntry = () => {
@@ -275,75 +253,13 @@ export default function App() {
   };
 
   const handleToggleFollow = () => {
-    fetch('/api/follow', { method: 'POST' }).catch(() => {});
     setUser(prev => ({
       ...prev,
       followingAuthor: !prev.followingAuthor
     }));
-    setStats(prev => ({
-      ...prev,
-      followersCount: user.followingAuthor ? prev.followersCount - 1 : prev.followersCount + 1
-    }));
   };
 
-  const handleAddComment = (content: string, parentId?: string | null) => {
-    if (!selectedEntry) return;
 
-    const newCommentObj = {
-      entryId: selectedEntry.id,
-      authorName: user.name,
-      authorAvatar: user.avatar,
-      authorRole: 'Reader' as const,
-      content,
-      parentId: parentId || null
-    };
-
-    fetch('/api/comments', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newCommentObj)
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.comment) {
-          setComments(prev => [...prev, data.comment]);
-          setEntries(prev => prev.map(e => e.id === selectedEntry.id ? { ...e, commentsCount: e.commentsCount + 1 } : e));
-        }
-      })
-      .catch(() => {
-        // Fallback local update
-        const fallbackComment = {
-          id: `comm-${Date.now()}`,
-          ...newCommentObj,
-          createdAt: 'Just now',
-          likes: 0
-        };
-        setComments(prev => [...prev, fallbackComment]);
-      });
-  };
-
-  const handleLikeComment = (commentId: string) => {
-    fetch(`/api/comments/${commentId}/like`, { method: 'POST' }).catch(() => {});
-    setComments(prev => prev.map(c => c.id === commentId ? { ...c, likes: c.likes + 1 } : c));
-  };
-
-  const handleSubscribeNewsletter = async (email: string) => {
-    try {
-      const res = await fetch('/api/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-      const data = await res.json();
-      if (data.success) {
-        setStats(prev => ({ ...prev, subscribersCount: prev.subscribersCount + 1 }));
-        return true;
-      }
-      return false;
-    } catch {
-      return true; // Fallback success
-    }
-  };
 
   const handleCreateDiary = (diaryData: Partial<Diary>) => {
     fetch('/api/diaries', {
@@ -381,6 +297,15 @@ export default function App() {
     setEntries(prev => prev.filter(e => e.diaryId !== diaryId));
   };
 
+  const handleUpdateDiary = (diaryId: string, diaryData: Partial<Diary>) => {
+    fetch(`/api/diaries/${diaryId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(diaryData)
+    }).catch(() => {});
+    setDiaries(prev => prev.map(d => (d.id === diaryId ? { ...d, ...diaryData } : d)));
+  };
+
   const handleCreateEntry = (entryData: Partial<JournalEntry>) => {
     fetch('/api/entries', {
       method: 'POST',
@@ -409,8 +334,9 @@ export default function App() {
           previewParagraph: entryData.previewParagraph || '',
           content: entryData.content || '',
           likes: 0,
-          commentsCount: 0,
-          slug: entryData.title?.toLowerCase().replace(/\s+/g, '-') || 'entry'
+          slug: entryData.title?.toLowerCase().replace(/\s+/g, '-') || 'entry',
+          isPinned: entryData.isPinned || false,
+          isFeatured: entryData.isFeatured || false
         };
         setEntries(prev => [fallbackEntry, ...prev]);
       });
@@ -443,10 +369,7 @@ export default function App() {
     }));
   };
 
-  const handleDeleteComment = (commentId: string) => {
-    fetch(`/api/comments/${commentId}`, { method: 'DELETE' }).catch(() => {});
-    setComments(prev => prev.filter(c => c.id !== commentId));
-  };
+
 
   const bookmarkedEntries = entries.filter(e => user.bookmarks.includes(e.id));
   const unreadNotifications = notifications.filter(n => !n.read).length;
@@ -458,7 +381,15 @@ export default function App() {
     : { label: 'Enter Library', icon: 'book' };
 
   return (
-    <div className={`min-h-screen flex flex-col font-sans-body transition-colors duration-300 ${isParchmentMode ? 'page-parchment' : 'bg-[#0d0d0d] text-[#e5e5e5]'}`}>
+    <div 
+      className={`min-h-screen flex flex-col font-sans-body transition-colors duration-300 ${isParchmentMode ? 'page-parchment' : 'text-[#e5e5e5]'}`}
+      style={!isParchmentMode ? {
+        backgroundImage: 'linear-gradient(rgba(13, 13, 13, 0.75), rgba(13, 13, 13, 0.95)), url(/bg-library.jpg)',
+        backgroundSize: 'cover',
+        backgroundAttachment: 'fixed',
+        backgroundPosition: 'center',
+      } : {}}
+    >
       
       {/* Header — overlays hero on landing, sticky on other pages. */}
       {currentView !== 'landing' && currentView !== 'login' && (
@@ -579,14 +510,11 @@ export default function App() {
                 entry={selectedEntry}
                 diary={selectedDiary || diaries.find(d => d.id === selectedEntry.diaryId)}
                 allEntries={entries}
-                comments={comments}
+                isBookmarked={user.bookmarks.includes(selectedEntry.id)}
                 onSelectEntry={handleSelectEntry}
                 onBackToDiary={() => setCurrentView('diary')}
                 onLikeEntry={handleLikeEntry}
                 onBookmarkEntry={handleBookmarkEntry}
-                isBookmarked={user.bookmarks.includes(selectedEntry.id)}
-                onAddComment={handleAddComment}
-                onLikeComment={handleLikeComment}
                 isParchmentMode={isParchmentMode}
               />
             </motion.div>
@@ -598,18 +526,16 @@ export default function App() {
               <AuthorDashboard
                 diaries={diaries}
                 entries={entries}
-                comments={comments}
-                stats={stats}
                 authorName={user.name}
                 activePage={adminActivePage as any}
                 setActivePage={(page) => setAdminActivePage(page)}
                 onCreateDiary={handleCreateDiary}
+                onUpdateDiary={handleUpdateDiary}
                 onDeleteDiary={handleDeleteDiary}
                 onCreateEntry={handleCreateEntry}
                 onUpdateEntry={handleUpdateEntry}
                 onTogglePinDiary={handleTogglePinDiary}
                 onDeleteEntry={handleDeleteEntry}
-                onDeleteComment={handleDeleteComment}
                 onClose={() => setCurrentView('library')}
                 onSignOut={handleSignOut}
               />
@@ -652,12 +578,6 @@ export default function App() {
         onClose={() => setIsNotificationsOpen(false)}
         notifications={notifications}
         onMarkAllRead={() => setNotifications(prev => prev.map(n => ({ ...n, read: true })))}
-      />
-
-      <NewsletterModal
-        isOpen={isNewsletterOpen}
-        onClose={() => setIsNewsletterOpen(false)}
-        onSubscribe={handleSubscribeNewsletter}
       />
 
       <RSSModal

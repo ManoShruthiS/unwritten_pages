@@ -59,9 +59,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
       if (sortOption === 'popular') {
         return b.likes - a.likes;
       }
-      if (sortOption === 'commented') {
-        return b.commentsCount - a.commentsCount;
-      }
+
       // Newest
       return new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime();
     });
@@ -194,7 +192,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
             <span>Sort:</span>
           </span>
 
-          {(['newest', 'oldest', 'popular', 'commented'] as const).map(option => (
+          {(['newest', 'oldest', 'popular'] as const).map(option => (
             <button
               key={option}
               onClick={() => setSortOption(option)}
@@ -337,10 +335,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
                         <Heart className="w-3.5 h-3.5 text-rose-400" />
                         <span>{entry.likes}</span>
                       </span>
-                      <span className="flex items-center space-x-1">
-                        <MessageSquare className="w-3.5 h-3.5 text-sky-400" />
-                        <span>{entry.commentsCount}</span>
-                      </span>
+
                       <span className="text-[#d4af37] font-sans-body font-semibold flex items-center group-hover:translate-x-1 transition-transform">
                         <span>Continue Reading</span>
                         <ChevronRight className="w-4 h-4" />

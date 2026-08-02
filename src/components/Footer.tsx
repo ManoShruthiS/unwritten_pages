@@ -1,14 +1,11 @@
 import React from 'react';
 import { Feather, Rss, Mail, ShieldCheck, Heart } from 'lucide-react';
-
 interface FooterProps {
-  onOpenNewsletter: () => void;
   onOpenRSS: () => void;
   onOpenAdmin: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
-  onOpenNewsletter,
   onOpenRSS,
   onOpenAdmin
 }) => {
@@ -40,14 +37,6 @@ export const Footer: React.FC<FooterProps> = ({
 
         {/* Quick Footer Navigation Links */}
         <div className="flex flex-wrap items-center justify-center gap-6 text-xs font-sans-body pt-2 border-t border-[#231b16] w-full max-w-md">
-          <button
-            onClick={onOpenNewsletter}
-            className="hover:text-[#d4af37] transition-colors flex items-center space-x-1"
-          >
-            <Mail className="w-3.5 h-3.5 text-[#d4af37]" />
-            <span>Newsletter</span>
-          </button>
-
           <button
             onClick={onOpenRSS}
             className="hover:text-[#d4af37] transition-colors flex items-center space-x-1"

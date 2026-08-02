@@ -58,39 +58,15 @@ export async function initDB() {
         preview_paragraph TEXT,
         content TEXT,
         likes INT DEFAULT 0,
-        comments_count INT DEFAULT 0,
+
         is_pinned BOOLEAN DEFAULT false,
         is_featured BOOLEAN DEFAULT false,
         slug VARCHAR(500)
       );
 
-      CREATE TABLE IF NOT EXISTS comments (
-        id VARCHAR(255) PRIMARY KEY,
-        entry_id VARCHAR(255) REFERENCES entries(id) ON DELETE CASCADE,
-        author_name VARCHAR(255),
-        author_avatar TEXT,
-        author_role VARCHAR(20) DEFAULT 'Reader',
-        content TEXT,
-        created_at VARCHAR(100),
-        likes INT DEFAULT 0,
-        parent_id VARCHAR(255)
-      );
 
-      CREATE TABLE IF NOT EXISTS subscribers (
-        id SERIAL PRIMARY KEY,
-        email VARCHAR(255) UNIQUE NOT NULL,
-        date TIMESTAMP DEFAULT NOW()
-      );
 
-      CREATE TABLE IF NOT EXISTS stats (
-        id INT PRIMARY KEY DEFAULT 1,
-        followers_count INT DEFAULT 142,
-        total_views INT DEFAULT 3820
-      );
 
-      INSERT INTO stats (id, followers_count, total_views)
-      VALUES (1, 142, 3820)
-      ON CONFLICT (id) DO NOTHING;
     `);
     console.log('Database tables initialized');
   } finally {
