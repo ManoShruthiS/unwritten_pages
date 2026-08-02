@@ -280,10 +280,12 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBackToHo
                     <Lock className="absolute left-3 top-2.5 w-4 h-4 text-[#8c8075]" />
                     <input
                       type={showCode ? 'text' : 'password'}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       maxLength={4}
                       placeholder="4-digit code"
                       value={code}
-                      onChange={e => setCode(e.target.value)}
+                      onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
                       className="w-full bg-[#110f0d] border border-[#3d2b1e] text-[#f3efe6] placeholder-[#5a4a3a] text-xs pl-10 pr-10 py-2.5 focus:outline-none focus:border-[#d4af37] font-sans rounded-sm tracking-[0.25em]"
                     />
                     <button
@@ -301,10 +303,12 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBackToHo
                       <Lock className="absolute left-3 top-2.5 w-4 h-4 text-[#8c8075]" />
                       <input
                         type={showCode ? 'text' : 'password'}
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         maxLength={4}
                         placeholder="confirm 4-digit code"
                         value={confirmCode}
-                        onChange={e => setConfirmCode(e.target.value)}
+                        onChange={e => setConfirmCode(e.target.value.replace(/\D/g, ''))}
                         className="w-full bg-[#110f0d] border border-[#3d2b1e] text-[#f3efe6] placeholder-[#5a4a3a] text-xs pl-10 pr-10 py-2.5 focus:outline-none focus:border-[#d4af37] font-sans rounded-sm tracking-[0.25em]"
                       />
                     </div>
