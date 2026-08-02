@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import confetti from 'canvas-confetti';
-import { JournalEntry, Diary } from '../types';
+import { JournalEntry, Diary, Comment } from '../types';
 import { 
   ArrowLeft, Clock, Calendar, Heart, Bookmark, Share2, 
   Check, MessageSquare, Send, ThumbsUp, ShieldAlert, Sparkles, 
-  ChevronLeft, ChevronRight, User, Feather, CornerDownRight, Copy, Terminal
+  ChevronLeft, ChevronRight, User, Feather, CornerDownRight, Copy, Terminal, Lock
 } from 'lucide-react';
 
 interface JournalEntryViewProps {
@@ -14,6 +14,13 @@ interface JournalEntryViewProps {
   allEntries: JournalEntry[];
   isBookmarked: boolean;
   isParchmentMode: boolean;
+  onSelectEntry: (entry: JournalEntry) => void;
+  onBackToDiary: () => void;
+  onLikeEntry: (entryId: string) => void;
+  onBookmarkEntry: (entryId: string) => void;
+  comments: Comment[];
+  onAddComment: (entryId: string, content: string) => void;
+  isAuthenticated: boolean;
 }
 
 export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
@@ -25,10 +32,15 @@ export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
   onLikeEntry,
   onBookmarkEntry,
   isBookmarked,
-  isParchmentMode
+  isParchmentMode,
+  comments,
+  onAddComment,
+  isAuthenticated
 }) => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [newComment, setNewComment] = useState('');
+  const [showAuthWarning, setShowAuthWarning] = useState(false);
 
   const [hasLiked, setHasLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(entry.likes);
@@ -54,6 +66,11 @@ export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
 
   // Handle Like Entry
   const handleLikeClick = () => {
+    if (!isAuthenticated) {
+      setShowAuthWarning(true);
+      return;
+    }
+    
     if (!hasLiked) {
       setHasLiked(true);
       setLikesCount(prev => prev + 1);
@@ -405,8 +422,56 @@ export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
           </div>
         )}
 
+        {/* COMMENTS SECTION - LOCKED FOR NOW */}
+        <div className="my-16 pt-12 border-t border-[#2d211a]">
+          <div className="flex items-center space-x-2 mb-8">
+            <MessageSquare className="w-5 h-5 text-[#d4af37]" />
+            <h3 className="font-cinzel text-2xl font-bold text-[#f3efe6]">Notes & Reflections</h3>
+          </div>
+
+          <div className="bg-[#110e0b] border border-[#d4af37]/20 rounded-xl p-10 flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 rounded-full bg-[#18120e] border border-[#3a2d24] flex items-center justify-center mb-4">
+              <Lock className="w-6 h-6 text-[#8c8075]" />
+            </div>
+            <h4 className="font-cinzel text-lg font-bold text-[#f3efe6] mb-2">Community Reflections</h4>
+            <p className="text-sm text-[#8c8075] max-w-sm mx-auto">
+              This feature is currently locked. Soon, you will be able to share your thoughts and read reflections from other readers.
+            </p>
+            <div className="mt-6 inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-[#18120e] border border-[#3a2d24]">
+              <Sparkles className="w-3.5 h-3.5 text-[#d4af37]" />
+              <span className="text-xs font-mono text-[#d4af37] uppercase tracking-widest">Coming Soon</span>
+            </div>
+          </div>
+        </div>
 
       </article>
+
+      {/* Auth Warning Modal */}
+      {showAuthWarning && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-[#18120e] border border-[#d4af37]/40 rounded-xl max-w-sm w-full p-6 text-center shadow-2xl relative"
+          >
+            <div className="w-16 h-16 rounded-full bg-[#d4af37]/10 flex items-center justify-center mx-auto mb-4 border border-[#d4af37]/20">
+              <User className="w-8 h-8 text-[#d4af37]" />
+            </div>
+            <h3 className="font-cinzel text-xl font-bold text-[#f3efe6] mb-2">Authentication Required</h3>
+            <p className="text-[#a3978c] text-sm mb-6">
+              You have not logged in yet. Please log in to like this entry or leave a comment so we can display your name properly!
+            </p>
+            <div className="flex justify-center">
+              <button 
+                onClick={() => setShowAuthWarning(false)}
+                className="px-6 py-2 bg-[#d4af37] text-black font-cinzel font-bold text-sm rounded hover:bg-[#e5c158] transition-colors"
+              >
+                Understood
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
     </div>
   );

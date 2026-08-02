@@ -163,7 +163,7 @@ console.log(initiateJourney("Mahi 🦢"));
 
 > **Note on Intention**: As I turn to page 2, the goal isn't perfection; it's consistency.
     `,
-    likes: 42,
+    likes: 42, commentsCount: 0,
 
     isPinned: true,
     slug: 'the-beginning'
@@ -207,7 +207,7 @@ git rebase origin/main
 
 > **Insight**: When you encounter a merge conflict, Git isn't breaking—it's humbly admitting: *"I value your intent too much to guess which version matters more."*
     `,
-    likes: 38,
+    likes: 38, commentsCount: 0,
 
     slug: 'understanding-git'
   },
@@ -261,7 +261,7 @@ export function useReadingProgress() {
 
 > "A project isn't finished when there is nothing left to add, but when there is nothing left to take away."
     `,
-    likes: 54,
+    likes: 54, commentsCount: 0,
 
     isFeatured: true,
     slug: 'building-my-first-project'
@@ -300,7 +300,7 @@ Looking back over the past few weeks, the code that broke taught me tenfold more
 
 > "Experience is simply the name we give our mistakes." — Oscar Wilde
     `,
-    likes: 49,
+    likes: 49, commentsCount: 0,
 
     slug: 'mistakes-that-made-me-better'
   },
@@ -344,7 +344,7 @@ print(f"Semantic Alignment: {cosine_similarity(vec_king, vec_queen):.4f}")
 
 > **Observation**: The magic of LLMs isn't that they know everything—it's that they have synthesized a map of human thought.
     `,
-    likes: 67,
+    likes: 67, commentsCount: 0,
 
     slug: 'spark-of-generative-intelligence'
   },
@@ -390,7 +390,7 @@ def read_journal_pages(file_path):
 
 > "Simple is better than complex. Readability counts." — The Zen of Python
     `,
-    likes: 31,
+    likes: 31, commentsCount: 0,
 
     slug: 'decorators-and-generator-elegance'
   },
@@ -418,7 +418,7 @@ When we create spaces like *The Unwritten Pages*, we build a haven away from the
 
 > "Reading is to the mind what exercise is to the body." — Joseph Addison
     `,
-    likes: 89,
+    likes: 89, commentsCount: 0,
 
     isFeatured: true,
     slug: 'on-solitude-books-and-unhurried-learning'

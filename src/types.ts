@@ -45,6 +45,7 @@ export interface JournalEntry {
   previewParagraph: string;
   content: string; // Rich Markdown content
   likes: number;
+  commentsCount: number;
 
   isPinned?: boolean;
   isFeatured?: boolean;
@@ -74,3 +75,14 @@ export interface NotificationItem {
   read: boolean;
   link?: string;
 }
+
+export interface Comment {
+  id: string;
+  entryId: string;
+  authorName: string;
+  authorAvatar: string;
+  content: string;
+  date: string;
+  likes: number;
+}
+

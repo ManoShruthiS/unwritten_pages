@@ -7,21 +7,20 @@ import { DiaryView } from './components/DiaryView';
 import { JournalEntryView } from './components/JournalEntryView';
 import { AuthorDashboard } from './components/AuthorDashboard';
 import { SearchModal } from './components/SearchModal';
-import { BookmarksDrawer } from './components/BookmarksDrawer';
+import { BookmarksView } from './components/BookmarksView';
 import { NotificationsModal } from './components/NotificationsModal';
 import { RSSModal } from './components/RSSModal';
 import { Footer } from './components/Footer';
 import { AboutView } from './components/AboutView';
-import { ExploreView } from './components/ExploreView';
 import { LoginView } from './components/LoginView';
 import { ReaderDashboard } from './components/ReaderDashboard';
 
-import { Diary, JournalEntry, UserProfile, NotificationItem } from './types';
+import { Diary, JournalEntry, UserProfile, NotificationItem, Comment } from './types';
 import { INITIAL_DIARIES, INITIAL_ENTRIES } from './data/initialData';
 
 export default function App() {
   // Navigation & View State
-  const [currentView, setCurrentView] = useState<'landing' | 'library' | 'explore' | 'about' | 'diary' | 'entry' | 'admin' | 'reader' | 'login'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'library' | 'bookmarks' | 'about' | 'diary' | 'entry' | 'admin' | 'reader' | 'login'>('landing');
   const [selectedDiary, setSelectedDiary] = useState<Diary | null>(null);
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
   const [adminActivePage, setAdminActivePage] = useState<string>('entries');
@@ -60,6 +59,27 @@ export default function App() {
       };
     }
   });
+
+  const [comments, setComments] = useState<Comment[]>([
+    {
+      id: 'c-1',
+      entryId: 'ch-001',
+      authorName: 'Alex Dev',
+      authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+      content: 'This reflection really resonated with me. I struggled with the same imposter syndrome when I started.',
+      date: 'July 22, 2026',
+      likes: 12
+    },
+    {
+      id: 'c-2',
+      entryId: 'ch-001',
+      authorName: 'Sarah J.',
+      authorAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
+      content: 'Beautifully written! The part about embracing failure as a feature, not a bug, is so true.',
+      date: 'July 24, 2026',
+      likes: 8
+    }
+  ]);
 
   const [isParchmentMode, setIsParchmentMode] = useState(false);
 
@@ -106,23 +126,21 @@ export default function App() {
     }
   }, [user]);
 
-  // Sync API Data on Mount
+  // Sync API Data on Mount (Connected to Express MongoDB Backend)
   useEffect(() => {
-    fetch('/api/diaries')
+    fetch('http://localhost:5000/api/diaries')
       .then(res => res.json())
       .then(data => {
-        if (data.success && data.diaries) setDiaries(data.diaries);
+        if (Array.isArray(data) && data.length > 0) setDiaries(data);
       })
       .catch(() => {});
 
-    fetch('/api/entries')
+    fetch('http://localhost:5000/api/entries')
       .then(res => res.json())
       .then(data => {
-        if (data.success && data.entries) setEntries(data.entries);
+        if (Array.isArray(data) && data.length > 0) setEntries(data);
       })
       .catch(() => {});
-
-
   }, []);
 
   // Keyboard shortcut for Cmd+K Search
@@ -138,7 +156,7 @@ export default function App() {
   }, []);
 
   // Handlers
-  const handleNavigate = (view: 'landing' | 'library' | 'explore' | 'about' | 'login') => {
+  const handleNavigate = (view: 'landing' | 'library' | 'bookmarks' | 'about' | 'login') => {
     setCurrentView(view);
     if (view === 'library') {
       setSelectedDiary(null);
@@ -148,16 +166,11 @@ export default function App() {
   };
 
   const handleOpenLibrary = () => {
-    if (!isAuthenticated) {
-      setCurrentView('login');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
-    if (user.role === 'Admin') {
+    if (isAuthenticated && user.role === 'Admin') {
       setCurrentView('admin');
       setAdminActivePage('write');
     } else {
-      setCurrentView('reader');
+      setCurrentView('library');
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -225,30 +238,49 @@ export default function App() {
   };
 
   const handleLikeEntry = (entryId: string) => {
-    fetch(`/api/entries/${entryId}/like`, { method: 'POST' }).catch(() => {});
+    if (!user || !user.id) return;
 
-    setEntries(prev => prev.map(e => {
-      if (e.id === entryId) {
-        return { ...e, likes: e.likes + 1 };
+    fetch(`http://localhost:5000/api/entries/${entryId}/like`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.userLikedEntries) {
+        setUser(prev => ({ ...prev, likedEntries: data.userLikedEntries }));
       }
-      return e;
-    }));
-
-    setUser(prev => {
-      if (!prev.likedEntries.includes(entryId)) {
-        return { ...prev, likedEntries: [...prev.likedEntries, entryId] };
+      if (typeof data.entryLikes === 'number') {
+        setEntries(prev => prev.map(e => e.id === entryId ? { ...e, likes: data.entryLikes } : e));
       }
-      return prev;
+    })
+    .catch(() => {
+      // Fallback local update
+      setEntries(prev => prev.map(e => e.id === entryId ? { ...e, likes: e.likes + 1 } : e));
+      setUser(prev => ({ ...prev, likedEntries: [...prev.likedEntries, entryId] }));
     });
   };
 
   const handleBookmarkEntry = (entryId: string) => {
-    setUser(prev => {
-      const exists = prev.bookmarks.includes(entryId);
-      const updated = exists
-        ? prev.bookmarks.filter(id => id !== entryId)
-        : [...prev.bookmarks, entryId];
-      return { ...prev, bookmarks: updated };
+    if (!user || !user.id) return;
+
+    fetch(`http://localhost:5000/api/users/${user.id}/bookmark`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ entryId })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.bookmarks) {
+        setUser(prev => ({ ...prev, bookmarks: data.bookmarks }));
+      }
+    })
+    .catch(() => {
+      setUser(prev => {
+        const exists = prev.bookmarks.includes(entryId);
+        const updated = exists ? prev.bookmarks.filter(id => id !== entryId) : [...prev.bookmarks, entryId];
+        return { ...prev, bookmarks: updated };
+      });
     });
   };
 
@@ -257,6 +289,24 @@ export default function App() {
       ...prev,
       followingAuthor: !prev.followingAuthor
     }));
+  };
+
+  const handleAddComment = (entryId: string, content: string) => {
+    const newComment: Comment = {
+      id: `c-${Date.now()}`,
+      entryId,
+      authorName: user.name,
+      authorAvatar: user.avatar,
+      content,
+      date: 'Just now',
+      likes: 0
+    };
+    setComments(prev => [...prev, newComment]);
+    
+    // Increment commentsCount on the entry
+    setEntries(prev => prev.map(e => 
+      e.id === entryId ? { ...e, commentsCount: (e.commentsCount || 0) + 1 } : e
+    ));
   };
 
 
@@ -334,6 +384,7 @@ export default function App() {
           previewParagraph: entryData.previewParagraph || '',
           content: entryData.content || '',
           likes: 0,
+          commentsCount: 0,
           slug: entryData.title?.toLowerCase().replace(/\s+/g, '-') || 'entry',
           isPinned: entryData.isPinned || false,
           isFeatured: entryData.isFeatured || false
@@ -474,13 +525,14 @@ export default function App() {
             </motion.div>
           )}
 
-          {currentView === 'explore' && (
-            <motion.div key="explore" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <ExploreView 
-                diaries={diaries}
-                entries={entries}
-                onSelectDiary={handleSelectDiary}
+
+
+          {currentView === 'bookmarks' && (
+            <motion.div key="bookmarks" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <BookmarksView 
+                bookmarkedEntries={bookmarkedEntries}
                 onSelectEntry={handleSelectEntry}
+                onRemoveBookmark={handleBookmarkEntry}
               />
             </motion.div>
           )}
@@ -516,6 +568,9 @@ export default function App() {
                 onLikeEntry={handleLikeEntry}
                 onBookmarkEntry={handleBookmarkEntry}
                 isParchmentMode={isParchmentMode}
+                comments={comments.filter(c => c.entryId === selectedEntry.id)}
+                onAddComment={handleAddComment}
+                isAuthenticated={isAuthenticated}
               />
             </motion.div>
           )}
@@ -563,14 +618,6 @@ export default function App() {
         entries={entries}
         onSelectDiary={handleSelectDiary}
         onSelectEntry={handleSelectEntry}
-      />
-
-      <BookmarksDrawer
-        isOpen={isBookmarksOpen}
-        onClose={() => setIsBookmarksOpen(false)}
-        bookmarkedEntries={bookmarkedEntries}
-        onSelectEntry={handleSelectEntry}
-        onRemoveBookmark={handleBookmarkEntry}
       />
 
       <NotificationsModal

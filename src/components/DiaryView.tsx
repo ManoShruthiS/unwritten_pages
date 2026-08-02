@@ -26,14 +26,6 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState<'newest' | 'oldest' | 'popular' | 'commented'>('newest');
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
-
-  // Extract all unique tags across entries in this diary
-  const allTags = Array.from(
-    new Set(entries.flatMap(e => e.tags))
-  );
-
   // Calculate cumulative reading time string
   const totalReadingMinutes = entries.reduce((acc, curr) => {
     const mins = parseInt(curr.readingTime) || 5;
@@ -48,8 +40,6 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
                             e.previewParagraph.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             e.content.toLowerCase().includes(searchQuery.toLowerCase());
       if (!matchesSearch) return false;
-      if (selectedTag && !e.tags.includes(selectedTag)) return false;
-      if (selectedSectionId && e.sectionId !== selectedSectionId) return false;
       return true;
     })
     .sort((a, b) => {
@@ -141,34 +131,6 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
         </div>
       </div>
 
-      {/* SECTION NAVIGATION TABS */}
-      {diary.sections && diary.sections.length > 0 && (
-        <div className="flex items-center space-x-6 border-b border-[#2d211a] mb-8 pb-1 overflow-x-auto">
-          <button
-            onClick={() => setSelectedSectionId(null)}
-            className={`whitespace-nowrap pb-2 text-sm font-sans-body transition-colors ${
-              selectedSectionId === null
-                ? 'text-[#d4af37] border-b-2 border-[#d4af37] font-bold'
-                : 'text-[#a3978c] hover:text-[#f3efe6]'
-            }`}
-          >
-            All Entries
-          </button>
-          {diary.sections.map(section => (
-            <button
-              key={section.id}
-              onClick={() => setSelectedSectionId(section.id)}
-              className={`whitespace-nowrap pb-2 text-sm font-sans-body transition-colors ${
-                selectedSectionId === section.id
-                  ? 'text-[#d4af37] border-b-2 border-[#d4af37] font-bold'
-                  : 'text-[#a3978c] hover:text-[#f3efe6]'
-              }`}
-            >
-              {section.name}
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* FILTER & SORT TOOLBAR */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-4 border-b border-[#2d211a]">
@@ -209,36 +171,6 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
 
       </div>
 
-      {/* TAG FILTER CHIPS */}
-      {allTags.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 mb-8">
-          <span className="text-xs text-[#a3978c] font-mono mr-1">Tags:</span>
-          <button
-            onClick={() => setSelectedTag(null)}
-            className={`px-2.5 py-1 rounded-full text-xs transition-all ${
-              selectedTag === null
-                ? 'bg-[#d4af37] text-[#121013] font-bold'
-                : 'bg-[#1a1411] text-[#a3978c] border border-[#3a2d24] hover:text-[#f3efe6]'
-            }`}
-          >
-            All Tags
-          </button>
-          {allTags.map(tag => (
-            <button
-              key={tag}
-              onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
-              className={`px-2.5 py-1 rounded-full text-xs transition-all flex items-center space-x-1 ${
-                selectedTag === tag
-                  ? 'bg-[#d4af37] text-[#121013] font-bold'
-                  : 'bg-[#1a1411] text-[#a3978c] border border-[#3a2d24] hover:text-[#f3efe6]'
-              }`}
-            >
-              <Tag className="w-3 h-3" />
-              <span>{tag}</span>
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* JOURNAL ENTRIES LIST */}
       {processedEntries.length === 0 ? (

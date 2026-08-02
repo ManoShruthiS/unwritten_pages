@@ -596,15 +596,33 @@ export const AuthorDashboard: React.FC<AuthorDashboardProps> = ({
                   <h2 className="font-cinzel text-sm font-bold text-[#f0e8d8]">
                     Published Entries ({entries.length})
                   </h2>
-                  <div className="relative">
-                    <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#6a5a4a]" />
-                    <input
-                      type="text"
-                      value={entriesQuery}
-                      onChange={e => setEntriesQuery(e.target.value)}
-                      placeholder="Search by title or tag..."
-                      className="bg-[#110e0b] border border-[#2a1e15] rounded-lg pl-8 pr-3 py-2 text-xs text-[#e8e0d5] focus:border-[#d4af37] outline-none w-60"
-                    />
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#6a5a4a]" />
+                      <input
+                        type="text"
+                        value={entriesQuery}
+                        onChange={e => setEntriesQuery(e.target.value)}
+                        placeholder="Search by title or tag..."
+                        className="bg-[#110e0b] border border-[#2a1e15] rounded-lg pl-8 pr-3 py-2 text-xs text-[#e8e0d5] focus:border-[#d4af37] outline-none w-48 sm:w-60"
+                      />
+                    </div>
+                    <button
+                      onClick={() => {
+                        setEditingEntryId(null);
+                        setEntryTitle('');
+                        setEntrySubtitle('');
+                        setEntryContent('');
+                        setEntryCoverImage('');
+                        setEntryTags('');
+                        setIsPreviewMode(false);
+                        setActivePage('write');
+                      }}
+                      className="px-3 py-2 bg-[#2b1e16] border border-[#d4af37]/40 text-[#d4af37] rounded-lg text-xs font-bold hover:border-[#d4af37] transition-all flex items-center gap-1.5 whitespace-nowrap"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      New Entry
+                    </button>
                   </div>
                 </div>
                 <div className="space-y-3">

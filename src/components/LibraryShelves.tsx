@@ -27,18 +27,17 @@ export const LibraryShelves: React.FC<LibraryShelvesProps> = ({
   canManage = false,
 }) => {
   const [filterQuery, setFilterQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'featured' | 'pinned'>('all');
+  const [selectedFilter, setSelectedFilter] = useState<'all' | 'pinned'>('all');
 
   const filteredDiaries = diaries.filter(d => {
     const matchesSearch = d.title.toLowerCase().includes(filterQuery.toLowerCase()) ||
                           d.description.toLowerCase().includes(filterQuery.toLowerCase());
     if (!matchesSearch) return false;
-    if (selectedFilter === 'featured') return d.isFeatured;
     if (selectedFilter === 'pinned') return d.isPinned;
     return true;
-  });
+  }).sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime());
 
-  const featuredDiaries = diaries.filter(d => d.isFeatured || d.isPinned);
+
 
   return (
     <section id="library-shelves" className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -51,10 +50,10 @@ export const LibraryShelves: React.FC<LibraryShelvesProps> = ({
             <span>The Main Stacks</span>
           </div>
           <h2 className="font-cinzel text-3xl sm:text-4xl font-bold text-[#f3efe6]">
-            Mahi's Leather-Bound Diaries
+            The Unwritten Archives
           </h2>
           <p className="font-serif-title italic text-sm sm:text-base text-[#a3978c] mt-1">
-            "Each diary represents a different journey of my life. Pull a book from the shelf to read."
+            "Fragments of thought, untold stories, and memories bound in leather. Choose a volume to begin."
           </p>
         </div>
 
@@ -83,16 +82,7 @@ export const LibraryShelves: React.FC<LibraryShelvesProps> = ({
             >
               All ({diaries.length})
             </button>
-            <button
-              onClick={() => setSelectedFilter('featured')}
-              className={`px-3 py-1 rounded-md transition-all ${
-                selectedFilter === 'featured'
-                  ? 'bg-[#2b1e16] text-[#d4af37] font-bold shadow'
-                  : 'text-[#a3978c] hover:text-[#f3efe6]'
-              }`}
-            >
-              Featured
-            </button>
+
           </div>
 
           {canManage && (
@@ -109,30 +99,6 @@ export const LibraryShelves: React.FC<LibraryShelvesProps> = ({
         </div>
       </div>
 
-      {/* FEATURED DIARIES SHELF (Upper Level) */}
-      {selectedFilter === 'all' && !filterQuery && featuredDiaries.length > 0 && (
-        <div className="mb-16">
-          <div className="flex items-center space-x-2 text-xs font-serif-title italic text-[#d4af37] mb-4">
-            <Star className="w-4 h-4 fill-[#d4af37]" />
-            <span className="text-sm font-semibold text-[#f3efe6]">Featured & Pinned Volumes</span>
-          </div>
-
-          <div className="relative rounded-2xl p-6 sm:p-8 wood-panel border border-[#3a2a1e] shadow-2xl">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {featuredDiaries.map((diary) => (
-                <DiaryBookCard
-                  key={`featured-${diary.id}`}
-                  diary={diary}
-                  onSelectDiary={onSelectDiary}
-                  isFeaturedBadge={true}
-                />
-              ))}
-            </div>
-            {/* Wooden Shelf Base */}
-            <div className="w-full h-5 wood-shelf mt-6 rounded-b-xl"></div>
-          </div>
-        </div>
-      )}
 
       {/* ALL DIARIES SHELVES */}
       <div className="relative rounded-2xl p-6 sm:p-8 wood-panel border border-[#3a2a1e] shadow-2xl">
@@ -181,7 +147,7 @@ interface DiaryBookCardProps {
   isFeaturedBadge?: boolean;
 }
 
-const DiaryBookCard: React.FC<DiaryBookCardProps> = ({ diary, onSelectDiary, isFeaturedBadge }) => {
+const DiaryBookCard: React.FC<DiaryBookCardProps> = ({ diary, onSelectDiary }) => {
   return (
     <motion.div
       whileHover={{ y: -8, rotateZ: -1 }}
@@ -214,11 +180,6 @@ const DiaryBookCard: React.FC<DiaryBookCardProps> = ({ diary, onSelectDiary, isF
             {diary.isPinned && (
               <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#d4af37] text-[#121013] font-bold">
                 Pinned
-              </span>
-            )}
-            {isFeaturedBadge && (
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#38bdf8] text-[#121013] font-bold">
-                Featured
               </span>
             )}
           </div>

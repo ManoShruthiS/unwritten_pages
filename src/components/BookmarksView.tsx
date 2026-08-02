@@ -1,50 +1,29 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { JournalEntry } from '../types';
-import { Bookmark, X, ArrowRight, Trash2, BookOpen } from 'lucide-react';
+import { Bookmark, ArrowRight, Trash2, BookOpen } from 'lucide-react';
 
-interface BookmarksDrawerProps {
-  isOpen: boolean;
-  onClose: () => void;
+interface BookmarksViewProps {
   bookmarkedEntries: JournalEntry[];
   onSelectEntry: (entry: JournalEntry) => void;
   onRemoveBookmark: (entryId: string) => void;
 }
 
-export const BookmarksDrawer: React.FC<BookmarksDrawerProps> = ({
-  isOpen,
-  onClose,
+export const BookmarksView: React.FC<BookmarksViewProps> = ({
   bookmarkedEntries,
   onSelectEntry,
   onRemoveBookmark
 }) => {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-sm">
-      <motion.div
-        initial={{ x: '100%' }}
-        animate={{ x: 0 }}
-        exit={{ x: '100%' }}
-        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="w-full max-w-md bg-[#18120e] border-l border-[#d4af37]/40 h-full flex flex-col shadow-2xl"
-      >
-        {/* Drawer Header */}
-        <div className="p-5 border-b border-[#2d211a] flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Bookmark className="w-5 h-5 text-[#d4af37] fill-[#d4af37]" />
-            <h2 className="font-cinzel text-lg font-bold text-[#f3efe6]">Saved Bookmarks</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-[#a3978c] hover:text-[#f3efe6] hover:bg-[#281d17] transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center space-x-3 mb-10 pb-6 border-b border-[#2d221c]">
+        <Bookmark className="w-8 h-8 text-[#d4af37] fill-[#d4af37]" />
+        <h2 className="font-cinzel text-3xl font-bold text-[#f3efe6]">Saved Bookmarks</h2>
+      </div>
 
-        {/* Bookmarks List */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+      {/* Bookmarks Grid */}
+      <div className="space-y-4">
           {bookmarkedEntries.length === 0 ? (
             <div className="text-center py-16 text-[#a3978c]">
               <BookOpen className="w-12 h-12 mx-auto text-[#3a2d24] mb-3" />
@@ -86,8 +65,7 @@ export const BookmarksDrawer: React.FC<BookmarksDrawerProps> = ({
         {/* Footer */}
         <div className="p-4 bg-[#121013] border-t border-[#2d211a] text-xs font-mono text-[#a3978c] text-center">
           {bookmarkedEntries.length} saved page{bookmarkedEntries.length === 1 ? '' : 's'} stored
-        </div>
-      </motion.div>
-    </div>
+      </div>
+    </section>
   );
 };

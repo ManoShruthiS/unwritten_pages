@@ -3,10 +3,9 @@ import { Search, User, Feather, LogOut, ChevronDown } from 'lucide-react';
 import { UserProfile } from '../types';
 
 interface HeaderProps {
-  onNavigate: (view: 'landing' | 'library' | 'explore' | 'about' | 'login') => void;
+  onNavigate: (view: 'landing' | 'library' | 'bookmarks' | 'about' | 'login') => void;
   onAdminNavigate?: (page: string) => void;
   onOpenSearch: () => void;
-  onOpenBookmarks: () => void;
   onOpenDashboard: () => void;
   onSignOut: () => void;
   user: UserProfile;
@@ -19,7 +18,6 @@ export const Header: React.FC<HeaderProps> = ({
   onNavigate,
   onAdminNavigate,
   onOpenSearch,
-  onOpenBookmarks,
   onOpenDashboard,
   onSignOut,
   user,
@@ -43,7 +41,6 @@ export const Header: React.FC<HeaderProps> = ({
   const standardNavItems = [
     { label: 'Home', view: 'landing' as const },
     { label: 'Library', view: 'library' as const },
-    { label: 'Explore', view: 'explore' as const },
     { label: 'About', view: 'about' as const },
   ];
 
@@ -154,8 +151,12 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Bookmarks (Readers Only) */}
         {(!isAuthenticated || user.role !== 'Admin') && (
           <button
-            onClick={onOpenBookmarks}
-            className="text-sm font-sans text-[#8c8075] hover:text-[#c5b8ab] transition-colors"
+            onClick={() => onNavigate('bookmarks')}
+            className={`text-sm font-sans transition-colors relative ${
+              currentView === 'bookmarks'
+                ? 'text-[#f3efe6] font-semibold after:content-[""] after:absolute after:bottom-[-4px] after:left-0 after:right-0 after:h-[1px] after:bg-[#d4af37]'
+                : 'text-[#8c8075] hover:text-[#c5b8ab]'
+            }`}
           >
             Bookmarks
           </button>
@@ -184,14 +185,7 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         ) : (
           <>
-            <button
-              onClick={onOpenDashboard}
-              className="flex items-center gap-1.5 text-[#c5b8ab] hover:text-[#d4af37] transition-colors text-sm font-sans cursor-pointer group"
-              title={user.role === 'Admin' ? 'Author Dashboard' : 'Reader Dashboard'}
-            >
-              <User className="w-4 h-4" />
-              <span className="hidden sm:inline">Dashboard</span>
-            </button>
+
             <button
               onClick={onSignOut}
               className="flex items-center gap-1.5 text-[#8c8075] hover:text-[#c0533a] transition-colors text-sm font-sans cursor-pointer"

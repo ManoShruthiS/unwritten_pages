@@ -19,8 +19,8 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBackToHo
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
 
-  // Validations & Account simulation
-  const handleAuthSubmit = (e: React.FormEvent) => {
+  // Validations & Account simulation (Connected to MongoDB Backend)
+  const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -29,73 +29,79 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBackToHo
       return;
     }
 
-    if (screen === 'author_signin') {
-      if (code.length !== 4 || !/^\d+$/.test(code)) {
-        setError('Code must be a 4-digit number.');
-        return;
-      }
-      if (username.toLowerCase() === 'manoshruthis' && code === '3678') {
-        onLoginSuccess({
-          id: 'author-mahi',
-          name: 'Manoshruthis',
-          email: 'manoshruthis@library.internal',
-          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80',
-          role: 'Admin',
-          followingAuthor: true,
-          bookmarks: [],
-          likedEntries: [],
-          readingStreak: 5,
-        });
-      } else if (username.toLowerCase() === 'manoshruthis') {
-        setError('Incorrect 4-digit code.');
-      } else {
-        setError('Author account not found.');
-      }
-    } else if (screen === 'reader_signin') {
-      if (code.length !== 4 || !/^\d+$/.test(code)) {
-        setError('Code must be a 4-digit number.');
-        return;
-      }
-      onLoginSuccess({
-        id: `reader-${username.toLowerCase()}`,
-        name: username,
-        email: `${username.toLowerCase()}@example.com`,
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-        role: 'Reader',
-        followingAuthor: true,
-        bookmarks: [],
-        likedEntries: [],
-        readingStreak: 1,
-      });
-    } else if (screen === 'reader_signup') {
-      if (code !== confirmCode) {
-        setError('Codes do not match.');
-        return;
-      }
-      if (code.length !== 4 || !/^\d+$/.test(code)) {
-        setError('Code must be exactly 4 digits.');
-        return;
-      }
-      if (username.length < 3 || username.length > 20) {
-        setError('Username must be between 3 and 20 characters.');
-        return;
-      }
-      if (!/^[a-z0-9_]+$/.test(username)) {
-        setError('Username can only contain lowercase letters, numbers, and underscores.');
-        return;
-      }
+    try {
+      if (screen === 'author_signin') {
+        if (code.length !== 4 || !/^\d+$/.test(code)) {
+          setError('Code must be a 4-digit number.');
+          return;
+        }
 
-      onLoginSuccess({
-        id: `reader-${username}`,
-        name: username.charAt(0).toUpperCase() + username.slice(1),
-        email: `${username}@example.com`,
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-        role: 'Reader',
-        followingAuthor: true,
-        bookmarks: [],
-        likedEntries: [],
-        readingStreak: 1,
-      });
+        const response = await fetch('http://localhost:5000/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, code, role: 'Admin' })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          setError(data.error || 'Login failed.');
+          return;
+        }
+
+        onLoginSuccess(data);
+      } else if (screen === 'reader_signin') {
+        if (code.length !== 4 || !/^\d+$/.test(code)) {
+          setError('Code must be a 4-digit number.');
+          return;
+        }
+        
+        const response = await fetch('http://localhost:5000/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, code, role: 'Reader' })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          setError(data.error || 'Sign in failed.');
+          return;
+        }
+
+        onLoginSuccess(data);
+      } else if (screen === 'reader_signup') {
+        if (code !== confirmCode) {
+          setError('Codes do not match.');
+          return;
+        }
+        if (code.length !== 4 || !/^\d+$/.test(code)) {
+          setError('Code must be exactly 4 digits.');
+          return;
+        }
+        if (username.length < 3 || username.length > 20) {
+          setError('Username must be between 3 and 20 characters.');
+          return;
+        }
+        if (!/^[a-z0-9_]+$/.test(username)) {
+          setError('Username can only contain lowercase letters, numbers, and underscores.');
+          return;
+        }
+
+        const response = await fetch('http://localhost:5000/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, code })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          setError(data.error || 'Registration failed.');
+          return;
+        }
+
+        onLoginSuccess(data);
+      }
+    } catch (err) {
+      setError('Cannot connect to the server. Please ensure the backend is running.');
     }
   };
 
