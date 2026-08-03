@@ -18,6 +18,8 @@ import { ReaderDashboard } from './components/ReaderDashboard';
 import { Diary, JournalEntry, UserProfile, NotificationItem, Comment } from './types';
 import { INITIAL_DIARIES, INITIAL_ENTRIES } from './data/initialData';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export default function App() {
   // Navigation & View State
   const [currentView, setCurrentView] = useState<'landing' | 'library' | 'bookmarks' | 'about' | 'diary' | 'entry' | 'admin' | 'reader' | 'login'>('landing');
@@ -93,7 +95,7 @@ export default function App() {
   // Sync API Data on Mount (Connected to Express MongoDB Backend)
   useEffect(() => {
     // Fetch Diaries
-    fetch('http://localhost:5000/api/diaries')
+    fetch(`${API_URL}/api/diaries`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) setDiaries(data);
@@ -101,7 +103,7 @@ export default function App() {
       .catch(() => {});
 
     // Fetch Entries
-    fetch('http://localhost:5000/api/entries')
+    fetch(`${API_URL}/api/entries`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) setEntries(data);
@@ -109,7 +111,7 @@ export default function App() {
       .catch(() => {});
       
     // Fetch Comments
-    fetch('http://localhost:5000/api/comments')
+    fetch(`${API_URL}/api/comments`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setComments(data);
@@ -118,7 +120,7 @@ export default function App() {
       
     // Fetch Latest User Profile if Authenticated
     if (isAuthenticated && user?.id) {
-      fetch(`http://localhost:5000/api/users/${user.id}`)
+      fetch(`${API_URL}/api/users/${user.id}`)
         .then(res => res.json())
         .then(data => {
           if (data && data.id) setUser(data);
@@ -224,7 +226,7 @@ export default function App() {
   const handleLikeEntry = (entryId: string) => {
     if (!user || !user.id) return;
 
-    fetch(`http://localhost:5000/api/entries/${entryId}/like`, {
+    fetch(`${API_URL}/api/entries/${entryId}/like`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: user.id })
@@ -250,7 +252,7 @@ export default function App() {
   const handleBookmarkEntry = (entryId: string) => {
     if (!user || !user.id) return;
 
-    fetch(`http://localhost:5000/api/users/${user.id}/bookmark`, {
+    fetch(`${API_URL}/api/users/${user.id}/bookmark`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ entryId })
@@ -288,7 +290,7 @@ export default function App() {
       likes: 0
     };
 
-    fetch('http://localhost:5000/api/comments', {
+    fetch(`${API_URL}/api/comments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newComment)
@@ -322,7 +324,7 @@ export default function App() {
       sections: diaryData.sections || []
     };
 
-    fetch('http://localhost:5000/api/diaries', {
+    fetch(`${API_URL}/api/diaries`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newDiaryPayload)
@@ -335,11 +337,11 @@ export default function App() {
   };
 
   const refreshLibraryData = () => {
-    fetch('http://localhost:5000/api/diaries')
+    fetch(`${API_URL}/api/diaries`)
       .then(res => res.json())
       .then(data => { if (Array.isArray(data)) setDiaries(data); })
       .catch(() => {});
-    fetch('http://localhost:5000/api/entries')
+    fetch(`${API_URL}/api/entries`)
       .then(res => res.json())
       .then(data => { if (Array.isArray(data)) setEntries(data); })
       .catch(() => {});
@@ -349,7 +351,7 @@ export default function App() {
     // Optimistic UI update, then re-sync from Mongo so local state always matches the database
     setDiaries(prev => prev.filter(d => d.id !== diaryId));
     setEntries(prev => prev.filter(e => e.diaryId !== diaryId));
-    fetch(`http://localhost:5000/api/diaries/${diaryId}`, { method: 'DELETE' })
+    fetch(`${API_URL}/api/diaries/${diaryId}`, { method: 'DELETE' })
       .then(res => { if (!res.ok) throw new Error(`Failed to delete diary (${res.status})`); return res.json(); })
       .then(() => refreshLibraryData())
       .catch(err => { console.error(err); refreshLibraryData(); });
@@ -358,7 +360,7 @@ export default function App() {
   const handleUpdateDiary = (diaryId: string, diaryData: Partial<Diary>) => {
     // Optimistic UI update, then apply the Mongo-confirmed document
     setDiaries(prev => prev.map(d => (d.id === diaryId ? { ...d, ...diaryData } : d)));
-    fetch(`http://localhost:5000/api/diaries/${diaryId}`, {
+    fetch(`${API_URL}/api/diaries/${diaryId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(diaryData)
@@ -390,7 +392,7 @@ export default function App() {
       isFeatured: entryData.isFeatured || false
     };
 
-    fetch('http://localhost:5000/api/entries', {
+    fetch(`${API_URL}/api/entries`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newEntryPayload)
@@ -407,7 +409,7 @@ export default function App() {
   const handleDeleteEntry = (entryId: string) => {
     // Optimistic UI update, then re-sync from Mongo so local state always matches the database
     setEntries(prev => prev.filter(e => e.id !== entryId));
-    fetch(`http://localhost:5000/api/entries/${entryId}`, { method: 'DELETE' })
+    fetch(`${API_URL}/api/entries/${entryId}`, { method: 'DELETE' })
       .then(res => { if (!res.ok) throw new Error(`Failed to delete entry (${res.status})`); return res.json(); })
       .then(() => refreshLibraryData())
       .catch(err => { console.error(err); refreshLibraryData(); });
@@ -416,7 +418,7 @@ export default function App() {
   const handleUpdateEntry = (entryId: string, entryData: Partial<JournalEntry>) => {
     // Optimistic UI update, then apply the Mongo-confirmed document
     setEntries(prev => prev.map(e => (e.id === entryId ? { ...e, ...entryData } : e)));
-    fetch(`http://localhost:5000/api/entries/${entryId}`, {
+    fetch(`${API_URL}/api/entries/${entryId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(entryData)
@@ -430,7 +432,7 @@ export default function App() {
     setDiaries(prev => prev.map(d => {
       if (d.id !== diaryId) return d;
       const nextPin = !d.isPinned;
-      fetch(`http://localhost:5000/api/diaries/${diaryId}`, {
+      fetch(`${API_URL}/api/diaries/${diaryId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isPinned: nextPin })

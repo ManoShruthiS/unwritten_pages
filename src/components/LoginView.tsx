@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Eye, EyeOff, BookOpen, User, Lock, ArrowLeft, Feather } from 'lucide-react';
 import { UserProfile } from '../types';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 interface LoginViewProps {
   onLoginSuccess: (user: UserProfile) => void;
   onBackToHome: () => void;
@@ -36,7 +38,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBackToHo
           return;
         }
 
-        const response = await fetch('http://localhost:5000/api/auth/login', {
+        const response = await fetch(`${API_URL}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, code, role: 'Admin' })
@@ -55,7 +57,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBackToHo
           return;
         }
         
-        const response = await fetch('http://localhost:5000/api/auth/login', {
+        const response = await fetch(`${API_URL}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, code, role: 'Reader' })
@@ -86,7 +88,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onBackToHo
           return;
         }
 
-        const response = await fetch('http://localhost:5000/api/auth/register', {
+        const response = await fetch(`${API_URL}/api/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, code })

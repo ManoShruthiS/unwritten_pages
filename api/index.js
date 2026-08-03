@@ -286,8 +286,6 @@ app.post('/api/comments', async (req, res) => {
 });
 
 // START SERVER & CONNECT TO MONGODB
-app.listen(PORT, () => console.log(`🚀 Node/Express Backend running on http://localhost:${PORT}`));
-
 if (MONGODB_URI) {
   mongoose.connect(MONGODB_URI)
     .then(() => {
@@ -299,3 +297,9 @@ if (MONGODB_URI) {
 } else {
   console.warn('⚠️ No MONGODB_URI found. Backend running in offline/in-memory mode.');
 }
+
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => console.log(`🚀 Node/Express Backend running on http://localhost:${PORT}`));
+}
+
+module.exports = app;

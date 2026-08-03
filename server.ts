@@ -289,18 +289,22 @@ app.put('/api/users/:id', async (req, res) => {
 
 // VITE MIDDLEWARE + START
 async function startServer() {
-  await initDB();
+  try {
+    await initDB();
 
-  // Seed author account if not exists
-  const { rows } = await pool.query("SELECT id FROM users WHERE username='manoshruthis'");
-  if (!rows.length) {
-    const hash = await bcrypt.hash('3678', 10);
-    await pool.query(
-      `INSERT INTO users (id, username, password_hash, name, email, avatar, role, following_author)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,true)`,
-      ['author-mahi', 'manoshruthis', hash, 'Mahi', 'mahi@library.internal', 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80', 'Admin']
-    );
-    console.log('Author account created');
+    // Seed author account if not exists
+    const { rows } = await pool.query("SELECT id FROM users WHERE username='manoshruthis'");
+    if (!rows.length) {
+      const hash = await bcrypt.hash('3678', 10);
+      await pool.query(
+        `INSERT INTO users (id, username, password_hash, name, email, avatar, role, following_author)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,true)`,
+        ['author-mahi', 'manoshruthis', hash, 'Mahi', 'mahi@library.internal', 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80', 'Admin']
+      );
+      console.log('Author account created');
+    }
+  } catch (err) {
+    console.warn('⚠️ PostgreSQL initialization skipped (no active local DB server). Frontend & MongoDB server active.');
   }
 
   if (process.env.NODE_ENV !== 'production') {
@@ -317,8 +321,17 @@ async function startServer() {
     });
   }
 
-  app.listen(Number(PORT), '0.0.0.0', () => {
+  const server = app.listen(Number(PORT), '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${PORT}`);
+  });
+  server.on('error', (err: any) => {
+    if (err.code === 'EADDRINUSE') {
+      const fallbackPort = Number(PORT) + 1;
+      console.log(`Port ${PORT} in use, starting on http://localhost:${fallbackPort}...`);
+      app.listen(fallbackPort, '0.0.0.0', () => {
+        console.log(`Server running on http://localhost:${fallbackPort}`);
+      });
+    }
   });
 }
 
