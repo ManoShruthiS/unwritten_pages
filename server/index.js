@@ -74,22 +74,34 @@ app.post('/api/admin/clean-db', async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized.' });
     }
 
-    const db = mongoose.connection.db;
-    if (db) {
-      const collections = await db.listCollections().toArray();
-      const names = collections.map(c => c.name);
+    // Explicitly target unwrittenpages database from client connection
+    const client = mongoose.connection.client;
+    const targetDb = client ? client.db('unwrittenpages') : mongoose.connection.db;
 
-      if (names.includes('users')) {
-        await db.collection('users').drop();
+    let droppedUsers = false;
+    let droppedComments = false;
+
+    if (targetDb) {
+      try {
+        await targetDb.collection('users').drop();
+        droppedUsers = true;
+      } catch (e) {
+        console.log('Drop users error:', e.message);
       }
-      if (names.includes('comments')) {
-        await db.collection('comments').drop();
+
+      try {
+        await targetDb.collection('comments').drop();
+        droppedComments = true;
+      } catch (e) {
+        console.log('Drop comments error:', e.message);
       }
     }
 
     res.json({
       success: true,
-      message: 'MongoDB database cleaned. Dropped users and comments collections.'
+      message: 'MongoDB database cleaned.',
+      droppedUsers,
+      droppedComments
     });
   } catch (err) {
     console.error('Clean DB Error:', err);
