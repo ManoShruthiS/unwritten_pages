@@ -3,7 +3,7 @@ import { Search, User, Feather, LogOut, ChevronDown } from 'lucide-react';
 import { UserProfile } from '../types';
 
 interface HeaderProps {
-  onNavigate: (view: 'landing' | 'library' | 'bookmarks' | 'about' | 'login') => void;
+  onNavigate: (view: 'landing' | 'library' | 'bookmarks' | 'about') => void;
   onAdminNavigate?: (page: string) => void;
   onOpenSearch: () => void;
   onOpenDashboard: () => void;
@@ -41,6 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
   const standardNavItems = [
     { label: 'Home', view: 'landing' as const },
     { label: 'Library', view: 'library' as const },
+    { label: 'Bookmarks', view: 'bookmarks' as const },
     { label: 'About', view: 'about' as const },
   ];
 
@@ -147,23 +148,9 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           ))
         )}
-        
-        {/* Bookmarks (Readers Only) */}
-        {(!isAuthenticated || user.role !== 'Admin') && (
-          <button
-            onClick={() => onNavigate('bookmarks')}
-            className={`text-sm font-sans transition-colors relative ${
-              currentView === 'bookmarks'
-                ? 'text-[#f3efe6] font-semibold after:content-[""] after:absolute after:bottom-[-4px] after:left-0 after:right-0 after:h-[1px] after:bg-[#d4af37]'
-                : 'text-[#8c8075] hover:text-[#c5b8ab]'
-            }`}
-          >
-            Bookmarks
-          </button>
-        )}
       </nav>
 
-      {/* Right: Search + Sign In */}
+      {/* Right: Search + (Optional Admin Sign Out) */}
       <div className="flex items-center gap-4 sm:gap-5 flex-shrink-0">
         <button
           onClick={onOpenSearch}
@@ -173,23 +160,13 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="hidden sm:inline">Search</span>
         </button>
 
-        <div className="w-px h-4 bg-[#3d2b1e]" />
-
-        {!isAuthenticated ? (
-          <button
-            onClick={() => onNavigate('login')}
-            className="flex items-center gap-1.5 text-[#8c8075] hover:text-[#c5b8ab] transition-colors text-sm font-sans cursor-pointer"
-          >
-            <User className="w-4 h-4" />
-            <span className="hidden sm:inline">Sign In</span>
-          </button>
-        ) : (
+        {isAuthenticated && user.role === 'Admin' && (
           <>
-
+            <div className="w-px h-4 bg-[#3d2b1e]" />
             <button
               onClick={onSignOut}
               className="flex items-center gap-1.5 text-[#8c8075] hover:text-[#c0533a] transition-colors text-sm font-sans cursor-pointer"
-              title="Sign Out"
+              title="Sign Out Admin"
             >
               <LogOut className="w-4 h-4" />
               <span className="hidden sm:inline">Sign Out</span>

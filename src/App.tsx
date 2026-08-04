@@ -12,33 +12,46 @@ import { NotificationsModal } from './components/NotificationsModal';
 import { RSSModal } from './components/RSSModal';
 import { Footer } from './components/Footer';
 import { AboutView } from './components/AboutView';
-import { LoginView } from './components/LoginView';
-import { ReaderDashboard } from './components/ReaderDashboard';
+import { Lock, Feather, X } from 'lucide-react';
 
 import { Diary, JournalEntry, UserProfile, NotificationItem, Comment } from './types';
 import { INITIAL_DIARIES, INITIAL_ENTRIES } from './data/initialData';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import { API_URL } from './config';
 
 export default function App() {
   // Navigation & View State
-  const [currentView, setCurrentView] = useState<'landing' | 'library' | 'bookmarks' | 'about' | 'diary' | 'entry' | 'admin' | 'reader' | 'login'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'library' | 'bookmarks' | 'about' | 'diary' | 'entry' | 'admin'>('landing');
   const [selectedDiary, setSelectedDiary] = useState<Diary | null>(null);
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
   const [adminActivePage, setAdminActivePage] = useState<string>('entries');
 
-  // Data Stores
-  const [diaries, setDiaries] = useState<Diary[]>(INITIAL_DIARIES);
-  const [entries, setEntries] = useState<JournalEntry[]>(INITIAL_ENTRIES);
+  // Data Stores with LocalStorage Fallback (Works 100% Offline & Mobile)
+  const [diaries, setDiaries] = useState<Diary[]>(() => {
+    try {
+      const saved = localStorage.getItem('unwritten_diaries');
+      return saved ? JSON.parse(saved) : INITIAL_DIARIES;
+    } catch {
+      return INITIAL_DIARIES;
+    }
+  });
 
+  const [entries, setEntries] = useState<JournalEntry[]>(() => {
+    try {
+      const saved = localStorage.getItem('unwritten_entries');
+      return saved ? JSON.parse(saved) : INITIAL_ENTRIES;
+    } catch {
+      return INITIAL_ENTRIES;
+    }
+  });
 
-  // User Profile & Preferences
+  // User Profile
   const [user, setUser] = useState<UserProfile>(() => {
     try {
       const saved = localStorage.getItem('unwritten_user_profile');
       return saved ? JSON.parse(saved) : {
         id: 'usr-1',
-        name: 'Scholar Reader',
+        name: 'Reader',
         email: 'reader@library.internal',
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
         role: 'Reader',
@@ -49,7 +62,7 @@ export default function App() {
     } catch {
       return {
         id: 'usr-1',
-        name: 'Scholar Reader',
+        name: 'Reader',
         email: 'reader@library.internal',
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
         role: 'Reader',
@@ -61,10 +74,9 @@ export default function App() {
   });
 
   const [comments, setComments] = useState<Comment[]>([]);
-
   const [isParchmentMode, setIsParchmentMode] = useState(false);
 
-  // Authentication session (persisted)
+  // Author Authentication (Persisted)
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     try {
       return localStorage.getItem('unwritten_auth') === 'true';
@@ -73,14 +85,15 @@ export default function App() {
     }
   });
 
+  // Secret Admin Lock Modal State
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+  const [adminPinInput, setAdminPinInput] = useState('');
+  const [adminPinError, setAdminPinError] = useState('');
+
   // Modals & Drawers
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isBookmarksOpen, setIsBookmarksOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-
   const [isRssOpen, setIsRssOpen] = useState(false);
-
-  // Notifications Data
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
 
   // Persist User Profile
@@ -92,57 +105,105 @@ export default function App() {
     }
   }, [user]);
 
-  // Sync API Data on Mount (Connected to Express MongoDB Backend)
+  // Persist Diaries & Entries
   useEffect(() => {
-    // Fetch Diaries
+    try {
+      localStorage.setItem('unwritten_diaries', JSON.stringify(diaries));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [diaries]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('unwritten_entries', JSON.stringify(entries));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [entries]);
+
+  // Silent Background API Sync on Mount (if backend is deployed and reachable)
+  useEffect(() => {
+    if (!API_URL) return;
+
     fetch(`${API_URL}/api/diaries`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) setDiaries(data);
       })
-      .catch(() => {});
+      .catch(() => {/* Silent catch for mobile/offline fallback */});
 
-    // Fetch Entries
     fetch(`${API_URL}/api/entries`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) setEntries(data);
       })
-      .catch(() => {});
-      
-    // Fetch Comments
+      .catch(() => {/* Silent catch */});
+
     fetch(`${API_URL}/api/comments`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setComments(data);
       })
-      .catch(() => {});
-      
-    // Fetch Latest User Profile if Authenticated
-    if (isAuthenticated && user?.id) {
-      fetch(`${API_URL}/api/users/${user.id}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data && data.id) setUser(data);
-        })
-        .catch(() => {});
-    }
-  }, [isAuthenticated, user?.id]);
+      .catch(() => {/* Silent catch */});
+  }, []);
 
-  // Keyboard shortcut for Cmd+K Search
+  // Keyboard shortcut for Search (Cmd+K) and Secret Admin Access (Ctrl+Shift+A)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         setIsSearchOpen(prev => !prev);
       }
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+        e.preventDefault();
+        handleOpenAdmin();
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Check URL hash for secret #admin link
+  useEffect(() => {
+    if (window.location.hash === '#admin') {
+      handleOpenAdmin();
+    }
+  }, []);
+
+  const handleOpenAdmin = () => {
+    if (isAuthenticated) {
+      setCurrentView('admin');
+      setAdminActivePage('entries');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      setIsAdminModalOpen(true);
+      setAdminPinInput('');
+      setAdminPinError('');
+    }
+  };
+
+  const handleVerifyAdminPin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (adminPinInput.trim() === '3678') {
+      setIsAuthenticated(true);
+      setUser(prev => ({ ...prev, role: 'Admin', name: 'Manoshruthis' }));
+      try {
+        localStorage.setItem('unwritten_auth', 'true');
+      } catch (err) {
+        console.error(err);
+      }
+      setIsAdminModalOpen(false);
+      setCurrentView('admin');
+      setAdminActivePage('entries');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      setAdminPinError('Incorrect Sanctuary Passcode.');
+    }
+  };
+
   // Handlers
-  const handleNavigate = (view: 'landing' | 'library' | 'bookmarks' | 'about' | 'login') => {
+  const handleNavigate = (view: 'landing' | 'library' | 'bookmarks' | 'about') => {
     setCurrentView(view);
     if (view === 'library') {
       setSelectedDiary(null);
@@ -151,50 +212,15 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleOpenLibrary = () => {
-    if (isAuthenticated && user.role === 'Admin') {
-      setCurrentView('admin');
-      setAdminActivePage('write');
-    } else {
-      setCurrentView('library');
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleOpenDashboard = () => {
-    if (user.role === 'Admin') {
-      setCurrentView('admin');
-      setAdminActivePage('write');
-    } else {
-      setCurrentView('reader');
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   const handleSignOut = () => {
     setIsAuthenticated(false);
+    setUser(prev => ({ ...prev, role: 'Reader' }));
     try {
       localStorage.removeItem('unwritten_auth');
     } catch (e) {
       console.error(e);
     }
     setCurrentView('landing');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleLoginSuccess = (loggedInUser: UserProfile) => {
-    setUser(loggedInUser);
-    setIsAuthenticated(true);
-    try {
-      localStorage.setItem('unwritten_auth', 'true');
-    } catch (e) {
-      console.error(e);
-    }
-    if (loggedInUser.role === 'Admin') {
-      setCurrentView('landing'); // Redirect to home page per user request
-    } else {
-      setCurrentView('reader');
-    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -206,77 +232,34 @@ export default function App() {
 
   const handleSelectEntry = (entry: JournalEntry) => {
     setSelectedEntry(entry);
-    // Find parent diary if not currently set
     if (!selectedDiary) {
       const parent = diaries.find(d => d.id === entry.diaryId);
       if (parent) setSelectedDiary(parent);
     }
     setCurrentView('entry');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    // Comments feature removed
-  };
-
-  const handleRandomEntry = () => {
-    if (entries.length === 0) return;
-    const randomIdx = Math.floor(Math.random() * entries.length);
-    handleSelectEntry(entries[randomIdx]);
   };
 
   const handleLikeEntry = (entryId: string) => {
-    if (!user || !user.id) return;
+    setEntries(prev => prev.map(e => e.id === entryId ? { ...e, likes: e.likes + 1 } : e));
+    setSelectedEntry(prev => prev && prev.id === entryId ? { ...prev, likes: prev.likes + 1 } : prev);
+    setUser(prev => ({ ...prev, likedEntries: [...prev.likedEntries, entryId] }));
 
-    fetch(`${API_URL}/api/entries/${entryId}/like`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: user.id })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.userLikedEntries) {
-        setUser(prev => ({ ...prev, likedEntries: data.userLikedEntries }));
-      }
-      if (typeof data.entryLikes === 'number') {
-        setEntries(prev => prev.map(e => e.id === entryId ? { ...e, likes: data.entryLikes } : e));
-        setSelectedEntry(prev => prev && prev.id === entryId ? { ...prev, likes: data.entryLikes } : prev);
-      }
-    })
-    .catch(() => {
-      // Fallback local update
-      setEntries(prev => prev.map(e => e.id === entryId ? { ...e, likes: e.likes + 1 } : e));
-      setSelectedEntry(prev => prev && prev.id === entryId ? { ...prev, likes: prev.likes + 1 } : prev);
-      setUser(prev => ({ ...prev, likedEntries: [...prev.likedEntries, entryId] }));
-    });
+    if (API_URL) {
+      fetch(`${API_URL}/api/entries/${entryId}/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id })
+      }).catch(() => {});
+    }
   };
 
   const handleBookmarkEntry = (entryId: string) => {
-    if (!user || !user.id) return;
-
-    fetch(`${API_URL}/api/users/${user.id}/bookmark`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ entryId })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.bookmarks) {
-        setUser(prev => ({ ...prev, bookmarks: data.bookmarks }));
-      }
-    })
-    .catch(() => {
-      setUser(prev => {
-        const exists = prev.bookmarks.includes(entryId);
-        const updated = exists ? prev.bookmarks.filter(id => id !== entryId) : [...prev.bookmarks, entryId];
-        return { ...prev, bookmarks: updated };
-      });
+    setUser(prev => {
+      const exists = prev.bookmarks.includes(entryId);
+      const updated = exists ? prev.bookmarks.filter(id => id !== entryId) : [...prev.bookmarks, entryId];
+      return { ...prev, bookmarks: updated };
     });
-  };
-
-  const handleToggleFollow = () => {
-    setUser(prev => ({
-      ...prev,
-      followingAuthor: !prev.followingAuthor
-    }));
   };
 
   const handleAddComment = (entryId: string, content: string) => {
@@ -290,28 +273,22 @@ export default function App() {
       likes: 0
     };
 
-    fetch(`${API_URL}/api/comments`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newComment)
-    })
-    .then(res => res.json())
-    .then(savedComment => {
-      setComments(prev => [...prev, savedComment]);
-      
-      // Increment comments count on the entry
-      setEntries(prev => prev.map(e => 
-        e.id === entryId ? { ...e, comments: (e.comments || 0) + 1 } : e
-      ));
-    })
-    .catch(err => console.error('Failed to post comment:', err));
+    setComments(prev => [...prev, newComment]);
+    setEntries(prev => prev.map(e => e.id === entryId ? { ...e, commentsCount: (e.commentsCount || 0) + 1 } : e));
+
+    if (API_URL) {
+      fetch(`${API_URL}/api/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newComment)
+      }).catch(() => {});
+    }
   };
 
-
-
   const handleCreateDiary = (diaryData: Partial<Diary>) => {
-    const newDiaryPayload = {
-      id: `diary-${Date.now()}`,
+    const tempId = `diary-${Date.now()}`;
+    const newDiaryPayload: Diary = {
+      id: tempId,
       slug: diaryData.title?.toLowerCase().replace(/\s+/g, '-') || 'new-diary',
       title: diaryData.title || 'Untitled Volume',
       description: diaryData.description || '',
@@ -324,54 +301,38 @@ export default function App() {
       sections: diaryData.sections || []
     };
 
-    fetch(`${API_URL}/api/diaries`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newDiaryPayload)
-    })
-      .then(res => { if (!res.ok) throw new Error(`Failed to create diary (${res.status})`); return res.json(); })
-      .then(created => {
-        setDiaries(prev => [...prev, created]);
-      })
-      .catch(err => { console.error(err); refreshLibraryData(); });
-  };
+    setDiaries(prev => [...prev, newDiaryPayload]);
 
-  const refreshLibraryData = () => {
-    fetch(`${API_URL}/api/diaries`)
-      .then(res => res.json())
-      .then(data => { if (Array.isArray(data)) setDiaries(data); })
-      .catch(() => {});
-    fetch(`${API_URL}/api/entries`)
-      .then(res => res.json())
-      .then(data => { if (Array.isArray(data)) setEntries(data); })
-      .catch(() => {});
+    if (API_URL) {
+      fetch(`${API_URL}/api/diaries`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newDiaryPayload)
+      }).catch(() => {});
+    }
   };
 
   const handleDeleteDiary = (diaryId: string) => {
-    // Optimistic UI update, then re-sync from Mongo so local state always matches the database
     setDiaries(prev => prev.filter(d => d.id !== diaryId));
     setEntries(prev => prev.filter(e => e.diaryId !== diaryId));
-    fetch(`${API_URL}/api/diaries/${diaryId}`, { method: 'DELETE' })
-      .then(res => { if (!res.ok) throw new Error(`Failed to delete diary (${res.status})`); return res.json(); })
-      .then(() => refreshLibraryData())
-      .catch(err => { console.error(err); refreshLibraryData(); });
+    if (API_URL) {
+      fetch(`${API_URL}/api/diaries/${diaryId}`, { method: 'DELETE' }).catch(() => {});
+    }
   };
 
   const handleUpdateDiary = (diaryId: string, diaryData: Partial<Diary>) => {
-    // Optimistic UI update, then apply the Mongo-confirmed document
     setDiaries(prev => prev.map(d => (d.id === diaryId ? { ...d, ...diaryData } : d)));
-    fetch(`${API_URL}/api/diaries/${diaryId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(diaryData)
-    })
-      .then(res => { if (!res.ok) throw new Error(`Failed to update diary (${res.status})`); return res.json(); })
-      .then(updated => { if (updated) setDiaries(prev => prev.map(d => (d.id === diaryId ? updated : d))); })
-      .catch(err => { console.error(err); refreshLibraryData(); });
+    if (API_URL) {
+      fetch(`${API_URL}/api/diaries/${diaryId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(diaryData)
+      }).catch(() => {});
+    }
   };
 
   const handleCreateEntry = (entryData: Partial<JournalEntry>) => {
-    const newEntryPayload = {
+    const newEntryPayload: JournalEntry = {
       id: `entry-${Date.now()}`,
       diaryId: entryData.diaryId || diaries[0]?.id || 'codershigh',
       sectionId: entryData.sectionId || '',
@@ -392,73 +353,45 @@ export default function App() {
       isFeatured: entryData.isFeatured || false
     };
 
-    fetch(`${API_URL}/api/entries`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newEntryPayload)
-    })
-      .then(res => { if (!res.ok) throw new Error(`Failed to create entry (${res.status})`); return res.json(); })
-      .then(created => {
-        setEntries(prev => [created, ...prev]);
-        // Refresh diaries to update entryCount
-        refreshLibraryData();
-      })
-      .catch(err => { console.error(err); refreshLibraryData(); });
+    setEntries(prev => [newEntryPayload, ...prev]);
+
+    if (API_URL) {
+      fetch(`${API_URL}/api/entries`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newEntryPayload)
+      }).catch(() => {});
+    }
   };
 
   const handleDeleteEntry = (entryId: string) => {
-    // Optimistic UI update, then re-sync from Mongo so local state always matches the database
     setEntries(prev => prev.filter(e => e.id !== entryId));
-    fetch(`${API_URL}/api/entries/${entryId}`, { method: 'DELETE' })
-      .then(res => { if (!res.ok) throw new Error(`Failed to delete entry (${res.status})`); return res.json(); })
-      .then(() => refreshLibraryData())
-      .catch(err => { console.error(err); refreshLibraryData(); });
+    if (API_URL) {
+      fetch(`${API_URL}/api/entries/${entryId}`, { method: 'DELETE' }).catch(() => {});
+    }
   };
 
   const handleUpdateEntry = (entryId: string, entryData: Partial<JournalEntry>) => {
-    // Optimistic UI update, then apply the Mongo-confirmed document
     setEntries(prev => prev.map(e => (e.id === entryId ? { ...e, ...entryData } : e)));
-    fetch(`${API_URL}/api/entries/${entryId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(entryData)
-    })
-      .then(res => { if (!res.ok) throw new Error(`Failed to update entry (${res.status})`); return res.json(); })
-      .then(updated => { if (updated) setEntries(prev => prev.map(e => (e.id === entryId ? updated : e))); })
-      .catch(err => { console.error(err); refreshLibraryData(); });
+    if (API_URL) {
+      fetch(`${API_URL}/api/entries/${entryId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entryData)
+      }).catch(() => {});
+    }
   };
 
   const handleTogglePinDiary = (diaryId: string) => {
-    setDiaries(prev => prev.map(d => {
-      if (d.id !== diaryId) return d;
-      const nextPin = !d.isPinned;
-      fetch(`${API_URL}/api/diaries/${diaryId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isPinned: nextPin })
-      })
-        .then(res => { if (!res.ok) throw new Error(`Failed to update pin state (${res.status})`); })
-        .then(() => refreshLibraryData())
-        .catch(err => { console.error(err); refreshLibraryData(); });
-      return { ...d, isPinned: nextPin };
-    }));
+    setDiaries(prev => prev.map(d => (d.id === diaryId ? { ...d, isPinned: !d.isPinned } : d)));
   };
 
+  const bookmarkedEntries = entries.filter(e => user.bookmarks.includes(e.id));
 
-
-  const bookmarkedEntries = isAuthenticated ? entries.filter(e => user.bookmarks.includes(e.id)) : [];
-  const unreadNotifications = notifications.filter(n => !n.read).length;
-  
   const diariesWithCounts = diaries.map(d => ({
     ...d,
     entryCount: entries.filter(e => e.diaryId === d.id).length
   }));
-
-  const heroCta = !isAuthenticated
-    ? { label: 'Open Library', icon: 'book' }
-    : user.role === 'Admin'
-    ? { label: 'Start writing', icon: 'feather' }
-    : { label: 'Enter Library', icon: 'book' };
 
   return (
     <div 
@@ -472,7 +405,7 @@ export default function App() {
     >
       
       {/* Header — overlays hero on landing, sticky on other pages. */}
-      {currentView !== 'landing' && currentView !== 'login' && (
+      {currentView !== 'landing' && (
         <div className="sticky top-0 z-50 bg-[#0d0d0d]/95 backdrop-blur-md border-b border-[#2d1f14]">
           <Header
             onNavigate={handleNavigate}
@@ -482,8 +415,7 @@ export default function App() {
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
             onOpenSearch={() => setIsSearchOpen(true)}
-            onOpenBookmarks={() => setIsBookmarksOpen(true)}
-            onOpenDashboard={handleOpenDashboard}
+            onOpenDashboard={handleOpenAdmin}
             onSignOut={handleSignOut}
             user={user}
             isAuthenticated={isAuthenticated}
@@ -499,7 +431,6 @@ export default function App() {
           
           {currentView === 'landing' && (
             <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative">
-              {/* Header overlays the hero section */}
               <div className="absolute top-0 left-0 right-0 z-50">
                 <Header
                   onNavigate={handleNavigate}
@@ -509,8 +440,7 @@ export default function App() {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                   onOpenSearch={() => setIsSearchOpen(true)}
-                  onOpenBookmarks={() => setIsBookmarksOpen(true)}
-                  onOpenDashboard={handleOpenDashboard}
+                  onOpenDashboard={handleOpenAdmin}
                   onSignOut={handleSignOut}
                   user={user}
                   isAuthenticated={isAuthenticated}
@@ -519,17 +449,9 @@ export default function App() {
                 />
               </div>
               <HeroLanding
-                onOpenLibrary={() => {
-                  if (user?.role === 'Admin') {
-                    setCurrentView('admin');
-                    setAdminActivePage('write');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  } else {
-                    handleNavigate('library');
-                  }
-                }}
-                ctaLabel={heroCta.label}
-                ctaIcon={heroCta.icon as any}
+                onOpenLibrary={() => handleNavigate('library')}
+                ctaLabel="Enter Library"
+                ctaIcon="book"
                 onSelectDiary={handleSelectDiary}
                 onSelectEntry={handleSelectEntry}
                 diaries={diariesWithCounts}
@@ -545,24 +467,11 @@ export default function App() {
               <LibraryShelves
                 diaries={diariesWithCounts}
                 onSelectDiary={handleSelectDiary}
-                onOpenAdmin={() => setCurrentView('admin')}
+                onOpenAdmin={handleOpenAdmin}
                 canManage={isAuthenticated && user.role === 'Admin'}
               />
             </motion.div>
           )}
-
-          {currentView === 'reader' && (
-            <motion.div key="reader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <ReaderDashboard
-                user={user}
-                diaries={diaries}
-                onSelectDiary={handleSelectDiary}
-                onOpenBookmarks={() => setIsBookmarksOpen(true)}
-              />
-            </motion.div>
-          )}
-
-
 
           {currentView === 'bookmarks' && (
             <motion.div key="bookmarks" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -599,8 +508,8 @@ export default function App() {
                 entry={selectedEntry}
                 diary={selectedDiary || diariesWithCounts.find(d => d.id === selectedEntry.diaryId)}
                 allEntries={entries}
-                isBookmarked={isAuthenticated && user.bookmarks.includes(selectedEntry.id)}
-                isLiked={isAuthenticated && user.likedEntries.includes(selectedEntry.id)}
+                isBookmarked={user.bookmarks.includes(selectedEntry.id)}
+                isLiked={user.likedEntries.includes(selectedEntry.id)}
                 onSelectEntry={handleSelectEntry}
                 onBackToDiary={() => setCurrentView('diary')}
                 onLikeEntry={handleLikeEntry}
@@ -613,13 +522,12 @@ export default function App() {
             </motion.div>
           )}
 
-
-          {currentView === 'admin' && (
+          {currentView === 'admin' && isAuthenticated && (
             <motion.div key="admin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <AuthorDashboard
                 diaries={diariesWithCounts}
                 entries={entries}
-                authorName={user.name}
+                authorName="Mahi 🦢"
                 activePage={adminActivePage as any}
                 setActivePage={(page) => setAdminActivePage(page)}
                 onCreateDiary={handleCreateDiary}
@@ -634,19 +542,67 @@ export default function App() {
               />
             </motion.div>
           )}
-          {currentView === 'login' && (
-            <motion.div key="login" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <LoginView
-                onLoginSuccess={handleLoginSuccess}
-                onBackToHome={() => setCurrentView('landing')}
-              />
-            </motion.div>
-          )}
 
         </AnimatePresence>
       </main>
 
+      <Footer
+        onOpenRSS={() => setIsRssOpen(true)}
+        onOpenAdmin={handleOpenAdmin}
+      />
 
+      {/* Secret Author PIN Modal */}
+      {isAdminModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="w-full max-w-sm bg-[#16120f] border border-[#d4af37]/40 rounded-xl shadow-2xl p-6 relative text-center"
+          >
+            <button
+              onClick={() => setIsAdminModalOpen(false)}
+              className="absolute top-4 right-4 text-[#8c8075] hover:text-[#f3efe6]"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="w-12 h-12 rounded-full bg-[#2a1e16] border border-[#d4af37]/50 flex items-center justify-center mx-auto mb-4 text-[#d4af37]">
+              <Lock className="w-6 h-6" />
+            </div>
+
+            <h3 className="font-cinzel text-xl font-bold text-[#f3efe6] mb-1">
+              Author Sanctuary
+            </h3>
+            <p className="text-xs text-[#a3978c] mb-6">
+              Enter your secret 4-digit passcode to access the Author Dashboard.
+            </p>
+
+            <form onSubmit={handleVerifyAdminPin} className="space-y-4">
+              <input
+                type="password"
+                maxLength={6}
+                placeholder="••••"
+                value={adminPinInput}
+                onChange={(e) => setAdminPinInput(e.target.value)}
+                className="w-full text-center tracking-widest text-2xl py-2 bg-[#0d0a08] border border-[#3d2b1e] rounded-lg text-[#d4af37] focus:outline-none focus:border-[#d4af37]"
+                autoFocus
+              />
+
+              {adminPinError && (
+                <p className="text-xs text-[#e55353]">{adminPinError}</p>
+              )}
+
+              <button
+                type="submit"
+                className="w-full py-2.5 bg-gradient-to-r from-[#8c6d27] to-[#d4af37] text-[#0d0a08] font-bold text-sm rounded-lg hover:brightness-110 transition-all flex items-center justify-center space-x-2"
+              >
+                <Feather className="w-4 h-4" />
+                <span>Unlock Sanctuary</span>
+              </button>
+            </form>
+          </motion.div>
+        </div>
+      )}
 
       {/* Global Modals & Drawers */}
       <SearchModal
