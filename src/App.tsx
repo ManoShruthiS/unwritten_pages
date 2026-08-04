@@ -29,10 +29,17 @@ export default function App() {
     try {
       const saved = localStorage.getItem('unwritten_diaries');
       const parsed = saved ? JSON.parse(saved) : [];
-      const combined = [...INITIAL_DIARIES];
+      const combined: Diary[] = [];
+
+      // Add INITIAL_DIARIES first
+      INITIAL_DIARIES.forEach(d => combined.push(d));
+
+      // Merge stored diaries only if they have unique titles
       if (Array.isArray(parsed)) {
         parsed.forEach((d: Diary) => {
-          if (!combined.some(c => c.id === d.id)) combined.push(d);
+          if (d.title && !combined.some(c => c.title.toLowerCase().trim() === d.title.toLowerCase().trim())) {
+            combined.push(d);
+          }
         });
       }
       return combined.length > 0 ? combined : INITIAL_DIARIES;
