@@ -85,23 +85,21 @@ export default function App() {
 
   // Silent Background API Sync on Mount (if backend is deployed and reachable)
   useEffect(() => {
-    if (!API_URL) return;
-
-    fetch(`${API_URL}/api/diaries`)
+    fetch(`${API_URL || ''}/api/diaries`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) setDiaries(data);
       })
       .catch(() => {/* Silent catch */});
 
-    fetch(`${API_URL}/api/entries`)
+    fetch(`${API_URL || ''}/api/entries`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) setEntries(data);
       })
       .catch(() => {/* Silent catch */});
 
-    fetch(`${API_URL}/api/comments`)
+    fetch(`${API_URL || ''}/api/comments`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) setComments(data);
@@ -203,12 +201,10 @@ export default function App() {
     setEntries(prev => prev.map(e => e.id === entryId ? { ...e, likes: e.likes + 1 } : e));
     setSelectedEntry(prev => prev && prev.id === entryId ? { ...prev, likes: prev.likes + 1 } : prev);
 
-    if (API_URL) {
-      fetch(`${API_URL}/api/entries/${entryId}/like`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      }).catch(() => {});
-    }
+    fetch(`${API_URL || ''}/api/entries/${entryId}/like`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    }).catch(() => {});
   };
 
   const handleAddComment = (entryId: string, content: string) => {
@@ -225,13 +221,11 @@ export default function App() {
     setComments(prev => [...prev, newComment]);
     setEntries(prev => prev.map(e => e.id === entryId ? { ...e, commentsCount: (e.commentsCount || 0) + 1 } : e));
 
-    if (API_URL) {
-      fetch(`${API_URL}/api/comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newComment)
-      }).catch(() => {});
-    }
+    fetch(`${API_URL || ''}/api/comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newComment)
+    }).catch(() => {});
   };
 
   const handleCreateDiary = (diaryData: Partial<Diary>) => {
@@ -252,32 +246,26 @@ export default function App() {
 
     setDiaries(prev => [...prev, newDiaryPayload]);
 
-    if (API_URL) {
-      fetch(`${API_URL}/api/diaries`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newDiaryPayload)
-      }).catch(() => {});
-    }
+    fetch(`${API_URL || ''}/api/diaries`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newDiaryPayload)
+    }).catch(() => {});
   };
 
   const handleDeleteDiary = (diaryId: string) => {
     setDiaries(prev => prev.filter(d => d.id !== diaryId));
     setEntries(prev => prev.filter(e => e.diaryId !== diaryId));
-    if (API_URL) {
-      fetch(`${API_URL}/api/diaries/${diaryId}`, { method: 'DELETE' }).catch(() => {});
-    }
+    fetch(`${API_URL || ''}/api/diaries/${diaryId}`, { method: 'DELETE' }).catch(() => {});
   };
 
   const handleUpdateDiary = (diaryId: string, diaryData: Partial<Diary>) => {
     setDiaries(prev => prev.map(d => (d.id === diaryId ? { ...d, ...diaryData } : d)));
-    if (API_URL) {
-      fetch(`${API_URL}/api/diaries/${diaryId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(diaryData)
-      }).catch(() => {});
-    }
+    fetch(`${API_URL || ''}/api/diaries/${diaryId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(diaryData)
+    }).catch(() => {});
   };
 
   const handleCreateEntry = (entryData: Partial<JournalEntry>) => {
@@ -304,31 +292,25 @@ export default function App() {
 
     setEntries(prev => [newEntryPayload, ...prev]);
 
-    if (API_URL) {
-      fetch(`${API_URL}/api/entries`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newEntryPayload)
-      }).catch(() => {});
-    }
+    fetch(`${API_URL || ''}/api/entries`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newEntryPayload)
+    }).catch(() => {});
   };
 
   const handleDeleteEntry = (entryId: string) => {
     setEntries(prev => prev.filter(e => e.id !== entryId));
-    if (API_URL) {
-      fetch(`${API_URL}/api/entries/${entryId}`, { method: 'DELETE' }).catch(() => {});
-    }
+    fetch(`${API_URL || ''}/api/entries/${entryId}`, { method: 'DELETE' }).catch(() => {});
   };
 
   const handleUpdateEntry = (entryId: string, entryData: Partial<JournalEntry>) => {
     setEntries(prev => prev.map(e => (e.id === entryId ? { ...e, ...entryData } : e)));
-    if (API_URL) {
-      fetch(`${API_URL}/api/entries/${entryId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(entryData)
-      }).catch(() => {});
-    }
+    fetch(`${API_URL || ''}/api/entries/${entryId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entryData)
+    }).catch(() => {});
   };
 
   const handleTogglePinDiary = (diaryId: string) => {
