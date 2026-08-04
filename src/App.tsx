@@ -64,7 +64,6 @@ export default function App() {
     }
   });
 
-  const [comments, setComments] = useState<Comment[]>([]);
   const [isParchmentMode, setIsParchmentMode] = useState(false);
 
   // Author Authentication (Persisted)
@@ -104,26 +103,45 @@ export default function App() {
     }
   }, [entries]);
 
-  // Silent Background API Sync on Mount (if backend is deployed and reachable)
+  // Silent Background API Sync on Mount (Synchronizes MongoDB with all devices)
   useEffect(() => {
     fetch(`${API_URL || ''}/api/diaries`)
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data) && data.length > 0) setDiaries(data);
+        if (Array.isArray(data) && data.length > 0) {
+          setDiaries(prev => {
+            const combined = [...prev];
+            data.forEach((d: Diary) => {
+              const idx = combined.findIndex(c => c.id === d.id || c.title.toLowerCase().trim() === d.title.toLowerCase().trim());
+              if (idx >= 0) {
+                combined[idx] = { ...combined[idx], ...d };
+              } else {
+                combined.push(d);
+              }
+            });
+            return combined;
+          });
+        }
       })
       .catch(() => {/* Silent catch */});
 
     fetch(`${API_URL || ''}/api/entries`)
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data) && data.length > 0) setEntries(data);
-      })
-      .catch(() => {/* Silent catch */});
-
-    fetch(`${API_URL || ''}/api/comments`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) setComments(data);
+        if (Array.isArray(data) && data.length > 0) {
+          setEntries(prev => {
+            const combined = [...prev];
+            data.forEach((e: JournalEntry) => {
+              const idx = combined.findIndex(c => c.id === e.id);
+              if (idx >= 0) {
+                combined[idx] = { ...combined[idx], ...e };
+              } else {
+                combined.push(e);
+              }
+            });
+            return combined;
+          });
+        }
       })
       .catch(() => {/* Silent catch */});
   }, []);
@@ -267,26 +285,7 @@ export default function App() {
     }).catch(() => {});
   };
 
-  const handleAddComment = (entryId: string, content: string) => {
-    const newComment = {
-      id: `c-${Date.now()}`,
-      entryId,
-      authorName: 'Reader',
-      authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-      content,
-      date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-      likes: 0
-    };
 
-    setComments(prev => [...prev, newComment]);
-    setEntries(prev => prev.map(e => e.id === entryId ? { ...e, commentsCount: (e.commentsCount || 0) + 1 } : e));
-
-    fetch(`${API_URL || ''}/api/comments`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newComment)
-    }).catch(() => {});
-  };
 
   const handleCreateDiary = (diaryData: Partial<Diary>) => {
     const tempId = `diary-${Date.now()}`;
@@ -485,8 +484,6 @@ export default function App() {
                 onBackToDiary={() => setCurrentView('diary')}
                 onLikeEntry={handleLikeEntry}
                 isParchmentMode={isParchmentMode}
-                comments={comments.filter(c => c.entryId === selectedEntry.id)}
-                onAddComment={handleAddComment}
                 isAuthenticated={isAuthor}
               />
             </motion.div>

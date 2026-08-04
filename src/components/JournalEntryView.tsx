@@ -16,9 +16,7 @@ interface JournalEntryViewProps {
   onSelectEntry: (entry: JournalEntry) => void;
   onBackToDiary: () => void;
   onLikeEntry: (entryId: string) => void;
-  isLiked: boolean;
-  comments: Comment[];
-  onAddComment: (entryId: string, content: string) => void;
+  isLiked?: boolean;
   isAuthenticated: boolean;
 }
 
@@ -29,10 +27,8 @@ export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
   onSelectEntry,
   onBackToDiary,
   onLikeEntry,
-  isLiked,
+  isLiked = false,
   isParchmentMode,
-  comments,
-  onAddComment,
   isAuthenticated
 }) => {
   const [scrollProgress, setScrollProgress] = useState(0);
