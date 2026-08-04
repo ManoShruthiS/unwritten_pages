@@ -84,7 +84,8 @@ export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
 
   // Handle Share / Copy Link
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
+    const uniqueUrl = `${window.location.origin}${window.location.pathname}#entry/${entry.slug || entry.id}`;
+    navigator.clipboard.writeText(uniqueUrl);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2500);
   };

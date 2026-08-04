@@ -144,12 +144,37 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Check URL hash for secret #admin link
+  // Handle Hash Deep Linking on Mount & HashChange
   useEffect(() => {
-    if (window.location.hash === '#admin') {
-      handleOpenAdmin();
-    }
-  }, []);
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (!hash) return;
+
+      if (hash === '#admin') {
+        handleOpenAdmin();
+      } else if (hash.startsWith('#entry/')) {
+        const entryRef = hash.replace('#entry/', '');
+        const found = entries.find(e => e.slug === entryRef || e.id === entryRef);
+        if (found) {
+          setSelectedEntry(found);
+          const parent = diaries.find(d => d.id === found.diaryId);
+          if (parent) setSelectedDiary(parent);
+          setCurrentView('entry');
+        }
+      } else if (hash.startsWith('#diary/')) {
+        const diaryRef = hash.replace('#diary/', '');
+        const found = diaries.find(d => d.slug === diaryRef || d.id === diaryRef);
+        if (found) {
+          setSelectedDiary(found);
+          setCurrentView('diary');
+        }
+      }
+    };
+
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [diaries, entries]);
 
   const handleOpenAdmin = () => {
     if (isAuthor) {
@@ -198,6 +223,7 @@ export default function App() {
       setSelectedDiary(null);
       setSelectedEntry(null);
     }
+    window.location.hash = view === 'landing' ? '' : view;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -209,12 +235,14 @@ export default function App() {
       console.error(e);
     }
     setCurrentView('landing');
+    window.location.hash = '';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSelectDiary = (diary: Diary) => {
     setSelectedDiary(diary);
     setCurrentView('diary');
+    window.location.hash = `diary/${diary.slug || diary.id}`;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -225,6 +253,7 @@ export default function App() {
       if (parent) setSelectedDiary(parent);
     }
     setCurrentView('entry');
+    window.location.hash = `entry/${entry.slug || entry.id}`;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
