@@ -3,7 +3,7 @@ import { Search, User, Feather, LogOut, ChevronDown } from 'lucide-react';
 import { UserProfile } from '../types';
 
 interface HeaderProps {
-  onNavigate: (view: 'landing' | 'library' | 'bookmarks' | 'about') => void;
+  onNavigate: (view: 'landing' | 'library' | 'about') => void;
   onAdminNavigate?: (page: string) => void;
   onOpenSearch: () => void;
   onOpenDashboard: () => void;
@@ -41,7 +41,6 @@ export const Header: React.FC<HeaderProps> = ({
   const standardNavItems = [
     { label: 'Home', view: 'landing' as const },
     { label: 'Library', view: 'library' as const },
-    { label: 'Bookmarks', view: 'bookmarks' as const },
     { label: 'About', view: 'about' as const },
   ];
 
