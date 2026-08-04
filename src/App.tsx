@@ -7,10 +7,8 @@ import { DiaryView } from './components/DiaryView';
 import { JournalEntryView } from './components/JournalEntryView';
 import { AuthorDashboard } from './components/AuthorDashboard';
 import { SearchModal } from './components/SearchModal';
-import { BookmarksView } from './components/BookmarksView';
 import { NotificationsModal } from './components/NotificationsModal';
 import { RSSModal } from './components/RSSModal';
-import { Footer } from './components/Footer';
 import { AboutView } from './components/AboutView';
 import { Lock, Feather, X } from 'lucide-react';
 
@@ -21,7 +19,7 @@ import { API_URL } from './config';
 
 export default function App() {
   // Navigation & View State
-  const [currentView, setCurrentView] = useState<'landing' | 'library' | 'bookmarks' | 'about' | 'diary' | 'entry' | 'admin'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'library' | 'about' | 'diary' | 'entry' | 'admin'>('landing');
   const [selectedDiary, setSelectedDiary] = useState<Diary | null>(null);
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
   const [adminActivePage, setAdminActivePage] = useState<string>('entries');
@@ -56,7 +54,6 @@ export default function App() {
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
         role: 'Reader',
         followingAuthor: true,
-        bookmarks: [],
         likedEntries: []
       };
     } catch {
@@ -67,7 +64,6 @@ export default function App() {
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
         role: 'Reader',
         followingAuthor: true,
-        bookmarks: [],
         likedEntries: []
       };
     }
@@ -203,7 +199,7 @@ export default function App() {
   };
 
   // Handlers
-  const handleNavigate = (view: 'landing' | 'library' | 'bookmarks' | 'about') => {
+  const handleNavigate = (view: 'landing' | 'library' | 'about') => {
     setCurrentView(view);
     if (view === 'library') {
       setSelectedDiary(null);
@@ -252,14 +248,6 @@ export default function App() {
         body: JSON.stringify({ userId: user.id })
       }).catch(() => {});
     }
-  };
-
-  const handleBookmarkEntry = (entryId: string) => {
-    setUser(prev => {
-      const exists = prev.bookmarks.includes(entryId);
-      const updated = exists ? prev.bookmarks.filter(id => id !== entryId) : [...prev.bookmarks, entryId];
-      return { ...prev, bookmarks: updated };
-    });
   };
 
   const handleAddComment = (entryId: string, content: string) => {
@@ -386,8 +374,6 @@ export default function App() {
     setDiaries(prev => prev.map(d => (d.id === diaryId ? { ...d, isPinned: !d.isPinned } : d)));
   };
 
-  const bookmarkedEntries = entries.filter(e => user.bookmarks.includes(e.id));
-
   const diariesWithCounts = diaries.map(d => ({
     ...d,
     entryCount: entries.filter(e => e.diaryId === d.id).length
@@ -473,16 +459,6 @@ export default function App() {
             </motion.div>
           )}
 
-          {currentView === 'bookmarks' && (
-            <motion.div key="bookmarks" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <BookmarksView 
-                bookmarkedEntries={bookmarkedEntries}
-                onSelectEntry={handleSelectEntry}
-                onRemoveBookmark={handleBookmarkEntry}
-              />
-            </motion.div>
-          )}
-
           {currentView === 'about' && (
             <motion.div key="about" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <AboutView />
@@ -496,8 +472,6 @@ export default function App() {
                 entries={entries.filter(e => e.diaryId === selectedDiary.id)}
                 onSelectEntry={handleSelectEntry}
                 onBackToLibrary={() => handleNavigate('library')}
-                onBookmarkEntry={handleBookmarkEntry}
-                bookmarkedIds={user.bookmarks}
               />
             </motion.div>
           )}
@@ -508,12 +482,10 @@ export default function App() {
                 entry={selectedEntry}
                 diary={selectedDiary || diariesWithCounts.find(d => d.id === selectedEntry.diaryId)}
                 allEntries={entries}
-                isBookmarked={user.bookmarks.includes(selectedEntry.id)}
                 isLiked={user.likedEntries.includes(selectedEntry.id)}
                 onSelectEntry={handleSelectEntry}
                 onBackToDiary={() => setCurrentView('diary')}
                 onLikeEntry={handleLikeEntry}
-                onBookmarkEntry={handleBookmarkEntry}
                 isParchmentMode={isParchmentMode}
                 comments={comments.filter(c => c.entryId === selectedEntry.id)}
                 onAddComment={handleAddComment}
@@ -545,11 +517,6 @@ export default function App() {
 
         </AnimatePresence>
       </main>
-
-      <Footer
-        onOpenRSS={() => setIsRssOpen(true)}
-        onOpenAdmin={handleOpenAdmin}
-      />
 
       {/* Secret Author PIN Modal */}
       {isAdminModalOpen && (

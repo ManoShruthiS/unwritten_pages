@@ -110,24 +110,11 @@ export const SearchModal: React.FC<SearchModalProps> = ({
         {/* Modal Body */}
         <div className="p-6 max-h-[60vh] overflow-y-auto space-y-6">
           
-          {/* Recent Searches Header if query is empty */}
+          {/* Default prompt when query is empty */}
           {!trimmedQuery && (
-            <div>
-              <div className="flex items-center space-x-2 text-xs font-mono text-[#a3978c] mb-3">
-                <History className="w-3.5 h-3.5 text-[#d4af37]" />
-                <span>Recent Searches</span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {recentSearches.map(s => (
-                  <button
-                    key={s}
-                    onClick={() => handleSelectQuery(s)}
-                    className="px-3 py-1 rounded-lg bg-[#231b16] text-[#c5b8ab] hover:text-[#d4af37] border border-[#3a2d24] text-xs transition-colors flex items-center space-x-1"
-                  >
-                    <span>{s}</span>
-                  </button>
-                ))}
-              </div>
+            <div className="text-center py-6 text-[#a3978c]">
+              <Search className="w-8 h-8 mx-auto text-[#d4af37]/40 mb-2" />
+              <p className="font-serif-title text-sm text-[#f3efe6]">Type to search across diaries, titles, tags, and entries...</p>
             </div>
           )}
 
