@@ -75,15 +75,25 @@ app.post('/api/admin/clean-db', async (req, res) => {
     }
 
     const db = mongoose.connection.db;
-    try { await db.collection('users').drop(); } catch (e) {}
-    try { await db.collection('comments').drop(); } catch (e) {}
+    if (db) {
+      const collections = await db.listCollections().toArray();
+      const names = collections.map(c => c.name);
+
+      if (names.includes('users')) {
+        await db.collection('users').drop();
+      }
+      if (names.includes('comments')) {
+        await db.collection('comments').drop();
+      }
+    }
 
     res.json({
       success: true,
       message: 'MongoDB database cleaned. Dropped users and comments collections.'
     });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to clean MongoDB database.' });
+    console.error('Clean DB Error:', err);
+    res.status(500).json({ error: err.message || 'Failed to clean MongoDB database.' });
   }
 });
 
