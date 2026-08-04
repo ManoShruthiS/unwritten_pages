@@ -19,7 +19,9 @@ async function connectToDatabase() {
     console.warn('⚠️ MONGODB_URI is not set in environment variables.');
     return;
   }
-  await mongoose.connect(uri);
+  await mongoose.connect(uri, {
+    serverSelectionTimeoutMS: 5000,
+  });
   isConnected = true;
   console.log('✅ Connected to MongoDB Atlas Cloud Database!');
 }
