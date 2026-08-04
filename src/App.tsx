@@ -28,7 +28,14 @@ export default function App() {
   const [diaries, setDiaries] = useState<Diary[]>(() => {
     try {
       const saved = localStorage.getItem('unwritten_diaries');
-      return saved ? JSON.parse(saved) : INITIAL_DIARIES;
+      const parsed = saved ? JSON.parse(saved) : [];
+      const combined = [...INITIAL_DIARIES];
+      if (Array.isArray(parsed)) {
+        parsed.forEach((d: Diary) => {
+          if (!combined.some(c => c.id === d.id)) combined.push(d);
+        });
+      }
+      return combined.length > 0 ? combined : INITIAL_DIARIES;
     } catch {
       return INITIAL_DIARIES;
     }
@@ -37,7 +44,14 @@ export default function App() {
   const [entries, setEntries] = useState<JournalEntry[]>(() => {
     try {
       const saved = localStorage.getItem('unwritten_entries');
-      return saved ? JSON.parse(saved) : INITIAL_ENTRIES;
+      const parsed = saved ? JSON.parse(saved) : [];
+      const combined = [...INITIAL_ENTRIES];
+      if (Array.isArray(parsed)) {
+        parsed.forEach((e: JournalEntry) => {
+          if (!combined.some(c => c.id === e.id)) combined.push(e);
+        });
+      }
+      return combined.length > 0 ? combined : INITIAL_ENTRIES;
     } catch {
       return INITIAL_ENTRIES;
     }
