@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { Diary, JournalEntry } from '../types';
 import { renderDiaryIcon } from './LibraryShelves';
 import { 
-  ArrowLeft, Clock, Calendar, Heart, MessageSquare, Tag, 
+  ArrowLeft, Clock, Calendar, MessageSquare, Tag, 
   Search, BookOpen, Sparkles, Filter, ChevronRight
 } from 'lucide-react';
 
@@ -244,11 +244,6 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
                     </div>
 
                     <div className="flex items-center space-x-4 text-xs text-[#a3978c]">
-                      <span className="flex items-center space-x-1">
-                        <Heart className="w-3.5 h-3.5 text-rose-400" />
-                        <span>{entry.likes}</span>
-                      </span>
-
                       <span className="text-[#d4af37] font-sans-body font-semibold flex items-center group-hover:translate-x-1 transition-transform">
                         <span>Continue Reading</span>
                         <ChevronRight className="w-4 h-4" />
