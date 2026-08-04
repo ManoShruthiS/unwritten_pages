@@ -408,27 +408,7 @@ export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
           </div>
         )}
 
-        {/* COMMENTS SECTION - LOCKED FOR NOW */}
-        <div className="my-16 pt-12 border-t border-[#2d211a]">
-          <div className="flex items-center space-x-2 mb-8">
-            <MessageSquare className="w-5 h-5 text-[#d4af37]" />
-            <h3 className="font-cinzel text-2xl font-bold text-[#f3efe6]">Notes & Reflections</h3>
-          </div>
 
-          <div className="bg-[#110e0b] border border-[#d4af37]/20 rounded-xl p-10 flex flex-col items-center justify-center text-center">
-            <div className="w-16 h-16 rounded-full bg-[#18120e] border border-[#3a2d24] flex items-center justify-center mb-4">
-              <Lock className="w-6 h-6 text-[#8c8075]" />
-            </div>
-            <h4 className="font-cinzel text-lg font-bold text-[#f3efe6] mb-2">Community Reflections</h4>
-            <p className="text-sm text-[#8c8075] max-w-sm mx-auto">
-              This feature is currently locked. Soon, you will be able to share your thoughts and read reflections from other readers.
-            </p>
-            <div className="mt-6 inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-[#18120e] border border-[#3a2d24]">
-              <Sparkles className="w-3.5 h-3.5 text-[#d4af37]" />
-              <span className="text-xs font-mono text-[#d4af37] uppercase tracking-widest">Coming Soon</span>
-            </div>
-          </div>
-        </div>
 
       </article>
 
