@@ -169,7 +169,8 @@ app.post('/api/admin/seed-db', async (req, res) => {
 
     res.json({ success: true, message: 'MongoDB Atlas seeded with The Code Book!' });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to seed database.' });
+    console.error('Seed DB Error:', err);
+    res.status(500).json({ error: err.message || 'Failed to seed database.' });
   }
 });
 
