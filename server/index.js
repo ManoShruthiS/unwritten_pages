@@ -232,6 +232,7 @@ app.post('/api/admin/seed-db', async (req, res) => {
 // --- DIARIES API ROUTES ---
 app.get('/api/diaries', async (req, res) => {
   try {
+    await connectToDatabase();
     const diaries = await Diary.find();
     res.json(diaries);
   } catch (err) {
@@ -241,6 +242,7 @@ app.get('/api/diaries', async (req, res) => {
 
 app.post('/api/diaries', async (req, res) => {
   try {
+    await connectToDatabase();
     const newDiary = new Diary(req.body);
     await newDiary.save();
     res.status(201).json(newDiary);
@@ -251,6 +253,7 @@ app.post('/api/diaries', async (req, res) => {
 
 app.put('/api/diaries/:id', async (req, res) => {
   try {
+    await connectToDatabase();
     const updated = await Diary.findOneAndUpdate({ id: req.params.id }, req.body, { new: true });
     res.json(updated);
   } catch (err) {
@@ -260,6 +263,7 @@ app.put('/api/diaries/:id', async (req, res) => {
 
 app.delete('/api/diaries/:id', async (req, res) => {
   try {
+    await connectToDatabase();
     const diaryId = req.params.id;
     await Diary.findOneAndDelete({ id: diaryId });
     await Entry.deleteMany({ diaryId });
@@ -272,6 +276,7 @@ app.delete('/api/diaries/:id', async (req, res) => {
 // --- ENTRIES API ROUTES ---
 app.get('/api/entries', async (req, res) => {
   try {
+    await connectToDatabase();
     const entries = await Entry.find();
     res.json(entries);
   } catch (err) {
@@ -281,6 +286,7 @@ app.get('/api/entries', async (req, res) => {
 
 app.post('/api/entries', async (req, res) => {
   try {
+    await connectToDatabase();
     const newEntry = new Entry(req.body);
     await newEntry.save();
     
@@ -294,6 +300,7 @@ app.post('/api/entries', async (req, res) => {
 
 app.put('/api/entries/:id', async (req, res) => {
   try {
+    await connectToDatabase();
     const updated = await Entry.findOneAndUpdate({ id: req.params.id }, req.body, { new: true });
     res.json(updated);
   } catch (err) {
@@ -303,6 +310,7 @@ app.put('/api/entries/:id', async (req, res) => {
 
 app.delete('/api/entries/:id', async (req, res) => {
   try {
+    await connectToDatabase();
     const entryId = req.params.id;
     const entry = await Entry.findOneAndDelete({ id: entryId });
     if (entry) {
@@ -317,6 +325,7 @@ app.delete('/api/entries/:id', async (req, res) => {
 // Like Entry Endpoint
 app.post('/api/entries/:id/like', async (req, res) => {
   try {
+    await connectToDatabase();
     const entryId = req.params.id;
     const entry = await Entry.findOneAndUpdate({ id: entryId }, { $inc: { likes: 1 } }, { new: true });
     res.json({ entryLikes: entry ? entry.likes : 0 });
