@@ -142,21 +142,31 @@ export default function App() {
     }
   };
 
-  const handleVerifyAdminPin = (e: React.FormEvent) => {
+  const handleVerifyAdminPin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (adminPinInput.trim() === '3678') {
-      setIsAuthor(true);
-      try {
-        localStorage.setItem('unwritten_author_session', 'true');
-      } catch (err) {
-        console.error(err);
+    try {
+      const msgBuffer = new TextEncoder().encode(adminPinInput.trim());
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hexHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      // SHA-256 hash of secret passcode
+      if (hexHash === '62f4d89dd319a4e7788a88a37913e1295e46b25ba49d6741be302ff6fe0b6baf') {
+        setIsAuthor(true);
+        try {
+          localStorage.setItem('unwritten_author_session', 'true');
+        } catch (err) {
+          console.error(err);
+        }
+        setIsAdminModalOpen(false);
+        setCurrentView('admin');
+        setAdminActivePage('entries');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setAdminPinError('Invalid passcode.');
       }
-      setIsAdminModalOpen(false);
-      setCurrentView('admin');
-      setAdminActivePage('entries');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      setAdminPinError('Incorrect Author Passcode.');
+    } catch {
+      setAdminPinError('Verification failed.');
     }
   };
 

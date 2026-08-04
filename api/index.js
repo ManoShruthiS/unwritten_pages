@@ -42,18 +42,27 @@ const Diary = require('./models/Diary');
 const Entry = require('./models/Entry');
 const Comment = require('./models/Comment');
 
+const crypto = require('crypto');
+const PASSCODE_HASH = '62f4d89dd319a4e7788a88a37913e1295e46b25ba49d6741be302ff6fe0b6baf';
+
+function isPasscodeValid(code) {
+  if (!code) return false;
+  const hash = crypto.createHash('sha256').update(String(code).trim()).digest('hex');
+  return hash === PASSCODE_HASH;
+}
+
 // --- AUTHOR AUTH CHECK ROUTE ---
 app.post('/api/auth/verify-author', async (req, res) => {
   try {
     const { code } = req.body;
-    if (code === '3678') {
+    if (isPasscodeValid(code)) {
       return res.json({
         id: 'author-mahi',
         name: 'Mahi 🦢',
         role: 'Admin'
       });
     }
-    return res.status(401).json({ error: 'Incorrect Author Passcode' });
+    return res.status(401).json({ error: 'Incorrect Passcode' });
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }
@@ -63,8 +72,8 @@ app.post('/api/auth/verify-author', async (req, res) => {
 app.post('/api/admin/clean-db', async (req, res) => {
   try {
     const { code } = req.body;
-    if (code !== '3678') {
-      return res.status(403).json({ error: 'Unauthorized. Valid Author code required.' });
+    if (!isPasscodeValid(code)) {
+      return res.status(403).json({ error: 'Unauthorized.' });
     }
 
     const deletedUsers = await User.deleteMany({ role: { $ne: 'Admin' } });
