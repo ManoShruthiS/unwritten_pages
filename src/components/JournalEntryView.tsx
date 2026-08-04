@@ -280,28 +280,7 @@ export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
               </div>
             </div>
 
-            {/* Quick Action Buttons */}
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handleLikeClick}
-                className={`p-2.5 rounded-lg border transition-all flex items-center space-x-1.5 text-xs ${
-                  hasLiked
-                    ? 'bg-rose-950/60 text-rose-300 border-rose-500/50 shadow-lg shadow-rose-900/20'
-                    : 'bg-[#1e1713] text-[#c5b8ab] border-[#3a2d24] hover:text-rose-400 hover:border-rose-500/40'
-                }`}
-              >
-                <Heart className={`w-4 h-4 ${hasLiked ? 'fill-rose-400 text-rose-400' : ''}`} />
-                <span className="font-mono">{likesCount}</span>
-              </button>
 
-              <button
-                onClick={handleCopyLink}
-                className="p-2.5 rounded-lg bg-[#1e1713] text-[#c5b8ab] border border-[#3a2d24] hover:text-[#d4af37] transition-all text-xs flex items-center space-x-1"
-                title="Share or copy link"
-              >
-                {copiedLink ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
-              </button>
-            </div>
           </div>
 
         </header>
@@ -321,35 +300,7 @@ export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
           ))}
         </div>
 
-        {/* LIKE & SHARE ACTION BAR */}
-        <div className="my-10 p-6 rounded-2xl bg-[#18120e] border border-[#3a2a1e] flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-          <div>
-            <h4 className="font-serif-title text-base font-bold text-[#f3efe6]">Did this entry resonate with you?</h4>
-            <p className="text-xs text-[#a3978c] mt-0.5">Leave a like on this entry to show it resonated with you.</p>
-          </div>
 
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={handleLikeClick}
-              className={`px-5 py-2.5 rounded-xl border text-xs font-sans-body font-bold transition-all flex items-center space-x-2 ${
-                hasLiked
-                  ? 'bg-rose-600 text-white border-rose-500 shadow-lg shadow-rose-900/30'
-                  : 'bg-[#2b1e16] text-[#e5c158] border-[#d4af37]/60 hover:border-[#d4af37]'
-              }`}
-            >
-              <Heart className={`w-4 h-4 ${hasLiked ? 'fill-white' : ''}`} />
-              <span>{hasLiked ? 'Liked Page' : 'Applaud Entry'} ({likesCount})</span>
-            </button>
-
-            <button
-              onClick={handleCopyLink}
-              className="px-4 py-2.5 rounded-xl bg-[#1a1411] border border-[#3a2d24] text-[#a3978c] hover:text-[#f3efe6] text-xs font-sans-body flex items-center space-x-1.5 transition-all"
-            >
-              {copiedLink ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-              <span>{copiedLink ? 'Link Copied' : 'Share Link'}</span>
-            </button>
-          </div>
-        </div>
 
         {/* PREVIOUS & NEXT ENTRY NAVIGATION */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-10">
