@@ -36,11 +36,9 @@ app.use(async (req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-// Import Models
-const User = require('./models/User');
+// Import Models (Diaries & Entries Only)
 const Diary = require('./models/Diary');
 const Entry = require('./models/Entry');
-const Comment = require('./models/Comment');
 
 const crypto = require('crypto');
 const PASSCODE_HASH = '62f4d89dd319a4e7788a88a37913e1295e46b25ba49d6741be302ff6fe0b6baf';
@@ -76,14 +74,13 @@ app.post('/api/admin/clean-db', async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized.' });
     }
 
-    const deletedUsers = await User.deleteMany({ role: { $ne: 'Admin' } });
-    const deletedComments = await Comment.deleteMany({});
+    const db = mongoose.connection.db;
+    try { await db.collection('users').drop(); } catch (e) {}
+    try { await db.collection('comments').drop(); } catch (e) {}
 
     res.json({
       success: true,
-      message: 'MongoDB database cleaned successfully.',
-      removedUsers: deletedUsers.deletedCount,
-      removedComments: deletedComments.deletedCount
+      message: 'MongoDB database cleaned. Dropped users and comments collections.'
     });
   } catch (err) {
     res.status(500).json({ error: 'Failed to clean MongoDB database.' });
@@ -123,14 +120,7 @@ app.delete('/api/diaries/:id', async (req, res) => {
   try {
     const diaryId = req.params.id;
     await Diary.findOneAndDelete({ id: diaryId });
-    
-    const entries = await Entry.find({ diaryId });
-    for (let entry of entries) {
-      await Comment.deleteMany({ entryId: entry.id });
-    }
-    
     await Entry.deleteMany({ diaryId });
-    
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete diary.' });
@@ -176,9 +166,6 @@ app.delete('/api/entries/:id', async (req, res) => {
     if (entry) {
       await Diary.findOneAndUpdate({ id: entry.diaryId }, { $inc: { entryCount: -1 } });
     }
-    
-    await Comment.deleteMany({ entryId });
-    
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete entry.' });
