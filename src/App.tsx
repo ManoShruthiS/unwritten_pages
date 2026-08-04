@@ -13,8 +13,6 @@ import { AboutView } from './components/AboutView';
 import { Lock, Feather, X } from 'lucide-react';
 
 import { Diary, JournalEntry, NotificationItem, Comment } from './types';
-import { INITIAL_DIARIES, INITIAL_ENTRIES } from './data/initialData';
-
 import { API_URL } from './config';
 
 export default function App() {
@@ -31,9 +29,6 @@ export default function App() {
       const parsed = saved ? JSON.parse(saved) : [];
       const combined: Diary[] = [];
 
-      // Add INITIAL_DIARIES first
-      INITIAL_DIARIES.forEach(d => combined.push(d));
-
       // Merge stored diaries only if they have unique titles
       if (Array.isArray(parsed)) {
         parsed.forEach((d: Diary) => {
@@ -42,9 +37,9 @@ export default function App() {
           }
         });
       }
-      return combined.length > 0 ? combined : INITIAL_DIARIES;
+      return combined;
     } catch {
-      return INITIAL_DIARIES;
+      return [];
     }
   });
 
@@ -52,15 +47,15 @@ export default function App() {
     try {
       const saved = localStorage.getItem('unwritten_entries');
       const parsed = saved ? JSON.parse(saved) : [];
-      const combined = [...INITIAL_ENTRIES];
+      const combined: JournalEntry[] = [];
       if (Array.isArray(parsed)) {
         parsed.forEach((e: JournalEntry) => {
           if (!combined.some(c => c.id === e.id)) combined.push(e);
         });
       }
-      return combined.length > 0 ? combined : INITIAL_ENTRIES;
+      return combined;
     } catch {
-      return INITIAL_ENTRIES;
+      return [];
     }
   });
 
