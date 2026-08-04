@@ -59,6 +59,7 @@ function isPasscodeValid(code) {
 // --- AUTHOR AUTH CHECK ROUTE ---
 app.post('/api/auth/verify-author', async (req, res) => {
   try {
+    await connectToDatabase();
     const { code } = req.body;
     if (isPasscodeValid(code)) {
       return res.json({
@@ -76,6 +77,7 @@ app.post('/api/auth/verify-author', async (req, res) => {
 // --- ADMIN DATABASE CLEANUP ROUTE ---
 app.post('/api/admin/clean-db', async (req, res) => {
   try {
+    await connectToDatabase();
     const { code } = req.body;
     if (!isPasscodeValid(code)) {
       return res.status(403).json({ error: 'Unauthorized.' });
@@ -119,6 +121,7 @@ app.post('/api/admin/clean-db', async (req, res) => {
 // --- ADMIN SEED ROUTE ---
 app.post('/api/admin/seed-db', async (req, res) => {
   try {
+    await connectToDatabase();
     const { code } = req.body;
     if (!isPasscodeValid(code)) {
       return res.status(403).json({ error: 'Unauthorized.' });
