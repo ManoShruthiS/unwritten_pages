@@ -241,7 +241,7 @@ app.post('/api/auth/register', async (req, res) => {
 
     const { rows } = await pool.query(
       `INSERT INTO users (id, username, password_hash, name, email, avatar, role, following_author)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,true) RETURNING id, username, name, email, avatar, role, following_author, bookmarks, liked_entries, reading_streak`,
+       VALUES ($1,$2,$3,$4,$5,$6,$7,true) RETURNING id, username, name, email, avatar, role, following_author, liked_entries, reading_streak`,
       [id, username.toLowerCase(), hash, username.charAt(0).toUpperCase() + username.slice(1), `${username.toLowerCase()}@example.com`, avatar, role || 'Reader']
     );
     res.status(201).json({ success: true, user: rows[0] });
@@ -269,16 +269,16 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// 18. User: Update bookmarks/likes
+// 18. User: Update likes
 app.put('/api/users/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { bookmarks, likedEntries, readingStreak } = req.body;
+    const { likedEntries, readingStreak } = req.body;
 
     const { rows } = await pool.query(
-      `UPDATE users SET bookmarks=COALESCE($1,bookmarks), liked_entries=COALESCE($2,liked_entries), reading_streak=COALESCE($3,reading_streak)
-       WHERE id=$4 RETURNING id, username, name, email, avatar, role, following_author, bookmarks, liked_entries, reading_streak`,
-      [bookmarks, likedEntries, readingStreak, id]
+      `UPDATE users SET liked_entries=COALESCE($1,liked_entries), reading_streak=COALESCE($2,reading_streak)
+       WHERE id=$3 RETURNING id, username, name, email, avatar, role, following_author, liked_entries, reading_streak`,
+      [likedEntries, readingStreak, id]
     );
     if (!rows.length) return res.status(404).json({ success: false, message: 'User not found' });
     res.json({ success: true, user: rows[0] });

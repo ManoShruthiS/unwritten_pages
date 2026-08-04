@@ -52,21 +52,6 @@ export interface JournalEntry {
   slug: string;
 }
 
-
-
-export interface UserProfile {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string;
-  role: 'Admin' | 'Reader';
-  followingAuthor: boolean;
-  bookmarks: string[]; // entry IDs
-  likedEntries: string[]; // entry IDs
-  readHistory?: string[]; // entry IDs read by user
-  lastActiveDate?: string;
-}
-
 export interface NotificationItem {
   id: string;
   title: string;
@@ -85,4 +70,3 @@ export interface Comment {
   date: string;
   likes: number;
 }
-

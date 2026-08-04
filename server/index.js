@@ -9,8 +9,32 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+let isConnected = false;
+async function connectToDatabase() {
+  if (isConnected && mongoose.connection.readyState === 1) {
+    return;
+  }
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    console.warn('⚠️ MONGODB_URI is not set in environment variables.');
+    return;
+  }
+  await mongoose.connect(uri);
+  isConnected = true;
+  console.log('✅ Connected to MongoDB Atlas Cloud Database!');
+}
+
+app.use(async (req, res, next) => {
+  try {
+    await connectToDatabase();
+    next();
+  } catch (err) {
+    console.error('❌ MongoDB Connection Error:', err);
+    next();
+  }
+});
+
 const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI;
 
 // Import Models
 const User = require('./models/User');
@@ -38,7 +62,6 @@ app.post('/api/auth/register', async (req, res) => {
       password: code,
       name: username.charAt(0).toUpperCase() + username.slice(1),
       role: 'Reader',
-      bookmarks: [],
       likedEntries: []
     });
 
@@ -49,7 +72,6 @@ app.post('/api/auth/register', async (req, res) => {
       name: newUser.name,
       username: newUser.username,
       role: newUser.role,
-      bookmarks: newUser.bookmarks,
       likedEntries: newUser.likedEntries
     });
   } catch (err) {
@@ -70,7 +92,6 @@ app.post('/api/auth/login', async (req, res) => {
           email: 'manoshruthis@library.internal',
           role: 'Admin',
           followingAuthor: true,
-          bookmarks: [],
           likedEntries: []
         });
       } else {
@@ -92,7 +113,6 @@ app.post('/api/auth/login', async (req, res) => {
       name: user.name,
       username: user.username,
       role: user.role,
-      bookmarks: user.bookmarks,
       likedEntries: user.likedEntries
     });
   } catch (err) {
@@ -233,24 +253,6 @@ app.get('/api/users/:id', async (req, res) => {
     res.json(user);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch user.' });
-  }
-});
-
-app.post('/api/users/:id/bookmark', async (req, res) => {
-  try {
-    const { entryId } = req.body;
-    const user = await User.findOne({ id: req.params.id });
-    
-    if (user.bookmarks.includes(entryId)) {
-      user.bookmarks = user.bookmarks.filter(id => id !== entryId);
-    } else {
-      user.bookmarks.push(entryId);
-    }
-    
-    await user.save();
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to toggle bookmark.' });
   }
 });
 

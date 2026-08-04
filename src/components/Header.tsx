@@ -1,15 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, User, Feather, LogOut, ChevronDown } from 'lucide-react';
-import { UserProfile } from '../types';
+import { Search, Feather, LogOut, ChevronDown } from 'lucide-react';
 
 interface HeaderProps {
   onNavigate: (view: 'landing' | 'library' | 'about') => void;
   onAdminNavigate?: (page: string) => void;
   onOpenSearch: () => void;
-  onOpenDashboard: () => void;
   onSignOut: () => void;
-  user: UserProfile;
-  isAuthenticated: boolean;
+  isAuthor: boolean;
   currentView: string;
   adminActivePage?: string;
 }
@@ -18,10 +15,8 @@ export const Header: React.FC<HeaderProps> = ({
   onNavigate,
   onAdminNavigate,
   onOpenSearch,
-  onOpenDashboard,
   onSignOut,
-  user,
-  isAuthenticated,
+  isAuthor,
   currentView,
   adminActivePage
 }) => {
@@ -82,7 +77,7 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Center: Nav Links */}
       <nav ref={navRef} className="flex items-center gap-6 sm:gap-8">
-        {isAuthenticated && user.role === 'Admin' ? (
+        {isAuthor ? (
           // Admin Dropdown Navigation
           <div className="flex items-center gap-6">
             <button
@@ -132,7 +127,7 @@ export const Header: React.FC<HeaderProps> = ({
             ))}
           </div>
         ) : (
-          // Standard Reader Navigation
+          // Standard Visitor Navigation
           standardNavItems.map(item => (
             <button
               key={item.view}
@@ -149,7 +144,7 @@ export const Header: React.FC<HeaderProps> = ({
         )}
       </nav>
 
-      {/* Right: Search + (Optional Admin Sign Out) */}
+      {/* Right: Search + Author Sign Out */}
       <div className="flex items-center gap-4 sm:gap-5 flex-shrink-0">
         <button
           onClick={onOpenSearch}
@@ -159,13 +154,13 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="hidden sm:inline">Search</span>
         </button>
 
-        {isAuthenticated && user.role === 'Admin' && (
+        {isAuthor && (
           <>
             <div className="w-px h-4 bg-[#3d2b1e]" />
             <button
               onClick={onSignOut}
               className="flex items-center gap-1.5 text-[#8c8075] hover:text-[#c0533a] transition-colors text-sm font-sans cursor-pointer"
-              title="Sign Out Admin"
+              title="Sign Out Author"
             >
               <LogOut className="w-4 h-4" />
               <span className="hidden sm:inline">Sign Out</span>

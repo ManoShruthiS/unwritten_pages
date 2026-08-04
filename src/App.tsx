@@ -12,7 +12,7 @@ import { RSSModal } from './components/RSSModal';
 import { AboutView } from './components/AboutView';
 import { Lock, Feather, X } from 'lucide-react';
 
-import { Diary, JournalEntry, UserProfile, NotificationItem, Comment } from './types';
+import { Diary, JournalEntry, NotificationItem, Comment } from './types';
 import { INITIAL_DIARIES, INITIAL_ENTRIES } from './data/initialData';
 
 import { API_URL } from './config';
@@ -43,39 +43,13 @@ export default function App() {
     }
   });
 
-  // User Profile
-  const [user, setUser] = useState<UserProfile>(() => {
-    try {
-      const saved = localStorage.getItem('unwritten_user_profile');
-      return saved ? JSON.parse(saved) : {
-        id: 'usr-1',
-        name: 'Reader',
-        email: 'reader@library.internal',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-        role: 'Reader',
-        followingAuthor: true,
-        likedEntries: []
-      };
-    } catch {
-      return {
-        id: 'usr-1',
-        name: 'Reader',
-        email: 'reader@library.internal',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-        role: 'Reader',
-        followingAuthor: true,
-        likedEntries: []
-      };
-    }
-  });
-
   const [comments, setComments] = useState<Comment[]>([]);
   const [isParchmentMode, setIsParchmentMode] = useState(false);
 
   // Author Authentication (Persisted)
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+  const [isAuthor, setIsAuthor] = useState<boolean>(() => {
     try {
-      return localStorage.getItem('unwritten_auth') === 'true';
+      return localStorage.getItem('unwritten_author_session') === 'true';
     } catch {
       return false;
     }
@@ -91,15 +65,6 @@ export default function App() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isRssOpen, setIsRssOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-
-  // Persist User Profile
-  useEffect(() => {
-    try {
-      localStorage.setItem('unwritten_user_profile', JSON.stringify(user));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [user]);
 
   // Persist Diaries & Entries
   useEffect(() => {
@@ -127,7 +92,7 @@ export default function App() {
       .then(data => {
         if (Array.isArray(data) && data.length > 0) setDiaries(data);
       })
-      .catch(() => {/* Silent catch for mobile/offline fallback */});
+      .catch(() => {/* Silent catch */});
 
     fetch(`${API_URL}/api/entries`)
       .then(res => res.json())
@@ -168,7 +133,7 @@ export default function App() {
   }, []);
 
   const handleOpenAdmin = () => {
-    if (isAuthenticated) {
+    if (isAuthor) {
       setCurrentView('admin');
       setAdminActivePage('entries');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -182,10 +147,9 @@ export default function App() {
   const handleVerifyAdminPin = (e: React.FormEvent) => {
     e.preventDefault();
     if (adminPinInput.trim() === '3678') {
-      setIsAuthenticated(true);
-      setUser(prev => ({ ...prev, role: 'Admin', name: 'Manoshruthis' }));
+      setIsAuthor(true);
       try {
-        localStorage.setItem('unwritten_auth', 'true');
+        localStorage.setItem('unwritten_author_session', 'true');
       } catch (err) {
         console.error(err);
       }
@@ -194,7 +158,7 @@ export default function App() {
       setAdminActivePage('entries');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      setAdminPinError('Incorrect Sanctuary Passcode.');
+      setAdminPinError('Incorrect Author Passcode.');
     }
   };
 
@@ -209,10 +173,9 @@ export default function App() {
   };
 
   const handleSignOut = () => {
-    setIsAuthenticated(false);
-    setUser(prev => ({ ...prev, role: 'Reader' }));
+    setIsAuthor(false);
     try {
-      localStorage.removeItem('unwritten_auth');
+      localStorage.removeItem('unwritten_author_session');
     } catch (e) {
       console.error(e);
     }
@@ -239,13 +202,11 @@ export default function App() {
   const handleLikeEntry = (entryId: string) => {
     setEntries(prev => prev.map(e => e.id === entryId ? { ...e, likes: e.likes + 1 } : e));
     setSelectedEntry(prev => prev && prev.id === entryId ? { ...prev, likes: prev.likes + 1 } : prev);
-    setUser(prev => ({ ...prev, likedEntries: [...prev.likedEntries, entryId] }));
 
     if (API_URL) {
       fetch(`${API_URL}/api/entries/${entryId}/like`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id })
+        headers: { 'Content-Type': 'application/json' }
       }).catch(() => {});
     }
   };
@@ -254,8 +215,8 @@ export default function App() {
     const newComment = {
       id: `c-${Date.now()}`,
       entryId,
-      authorName: user.name,
-      authorAvatar: user.avatar,
+      authorName: 'Reader',
+      authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
       content,
       date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
       likes: 0
@@ -401,10 +362,8 @@ export default function App() {
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
             onOpenSearch={() => setIsSearchOpen(true)}
-            onOpenDashboard={handleOpenAdmin}
             onSignOut={handleSignOut}
-            user={user}
-            isAuthenticated={isAuthenticated}
+            isAuthor={isAuthor}
             currentView={currentView}
             adminActivePage={adminActivePage}
           />
@@ -426,10 +385,8 @@ export default function App() {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                   onOpenSearch={() => setIsSearchOpen(true)}
-                  onOpenDashboard={handleOpenAdmin}
                   onSignOut={handleSignOut}
-                  user={user}
-                  isAuthenticated={isAuthenticated}
+                  isAuthor={isAuthor}
                   currentView={currentView}
                   adminActivePage={adminActivePage}
                 />
@@ -454,7 +411,7 @@ export default function App() {
                 diaries={diariesWithCounts}
                 onSelectDiary={handleSelectDiary}
                 onOpenAdmin={handleOpenAdmin}
-                canManage={isAuthenticated && user.role === 'Admin'}
+                canManage={isAuthor}
               />
             </motion.div>
           )}
@@ -482,19 +439,18 @@ export default function App() {
                 entry={selectedEntry}
                 diary={selectedDiary || diariesWithCounts.find(d => d.id === selectedEntry.diaryId)}
                 allEntries={entries}
-                isLiked={user.likedEntries.includes(selectedEntry.id)}
                 onSelectEntry={handleSelectEntry}
                 onBackToDiary={() => setCurrentView('diary')}
                 onLikeEntry={handleLikeEntry}
                 isParchmentMode={isParchmentMode}
                 comments={comments.filter(c => c.entryId === selectedEntry.id)}
                 onAddComment={handleAddComment}
-                isAuthenticated={isAuthenticated}
+                isAuthenticated={isAuthor}
               />
             </motion.div>
           )}
 
-          {currentView === 'admin' && isAuthenticated && (
+          {currentView === 'admin' && isAuthor && (
             <motion.div key="admin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <AuthorDashboard
                 diaries={diariesWithCounts}

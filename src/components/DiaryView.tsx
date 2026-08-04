@@ -4,7 +4,7 @@ import { Diary, JournalEntry } from '../types';
 import { renderDiaryIcon } from './LibraryShelves';
 import { 
   ArrowLeft, Clock, Calendar, Heart, MessageSquare, Tag, 
-  Search, BookOpen, Sparkles, Filter, ChevronRight, Bookmark
+  Search, BookOpen, Sparkles, Filter, ChevronRight
 } from 'lucide-react';
 
 interface DiaryViewProps {
@@ -12,17 +12,13 @@ interface DiaryViewProps {
   entries: JournalEntry[];
   onSelectEntry: (entry: JournalEntry) => void;
   onBackToLibrary: () => void;
-  onBookmarkEntry: (entryId: string) => void;
-  bookmarkedIds: string[];
 }
 
 export const DiaryView: React.FC<DiaryViewProps> = ({
   diary,
   entries,
   onSelectEntry,
-  onBackToLibrary,
-  onBookmarkEntry,
-  bookmarkedIds
+  onBackToLibrary
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState<'newest' | 'oldest' | 'popular' | 'commented'>('newest');
@@ -182,7 +178,6 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
       ) : (
         <div className="space-y-6">
           {processedEntries.map((entry) => {
-            const isBookmarked = bookmarkedIds.includes(entry.id);
             return (
               <motion.article
                 key={entry.id}
@@ -206,7 +201,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
                 {/* Entry Body Content */}
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
-                    <div className="flex items-center justify-between text-xs text-[#a3978c] font-sans-body mb-1">
+                    <div className="flex items-center text-xs text-[#a3978c] font-sans-body mb-1">
                       <div className="flex items-center space-x-3">
                         <span className="flex items-center space-x-1">
                           <Calendar className="w-3.5 h-3.5 text-[#d4af37]" />
@@ -218,20 +213,6 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
                           <span>{entry.readingTime}</span>
                         </span>
                       </div>
-
-                      {/* Bookmark Icon */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onBookmarkEntry(entry.id);
-                        }}
-                        className={`p-1.5 rounded-full hover:bg-[#2b1e16] transition-all ${
-                          isBookmarked ? 'text-[#d4af37]' : 'text-[#8c8075] hover:text-[#d4af37]'
-                        }`}
-                        title={isBookmarked ? 'Remove Bookmark' : 'Bookmark Entry'}
-                      >
-                        <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-[#d4af37]' : ''}`} />
-                      </button>
                     </div>
 
                     <h2 className="font-cinzel text-xl sm:text-2xl font-bold text-[#f3efe6] group-hover:text-[#d4af37] transition-colors mt-1">

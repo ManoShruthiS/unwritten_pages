@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import confetti from 'canvas-confetti';
 import { JournalEntry, Diary, Comment } from '../types';
 import { 
-  ArrowLeft, Clock, Calendar, Heart, Bookmark, Share2, 
+  ArrowLeft, Clock, Calendar, Heart, Share2, 
   Check, MessageSquare, Send, ThumbsUp, ShieldAlert, Sparkles, 
   ChevronLeft, ChevronRight, User, Feather, CornerDownRight, Copy, Terminal, Lock
 } from 'lucide-react';
@@ -12,12 +12,10 @@ interface JournalEntryViewProps {
   entry: JournalEntry;
   diary?: Diary;
   allEntries: JournalEntry[];
-  isBookmarked: boolean;
   isParchmentMode: boolean;
   onSelectEntry: (entry: JournalEntry) => void;
   onBackToDiary: () => void;
   onLikeEntry: (entryId: string) => void;
-  onBookmarkEntry: (entryId: string) => void;
   isLiked: boolean;
   comments: Comment[];
   onAddComment: (entryId: string, content: string) => void;
@@ -31,8 +29,6 @@ export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
   onSelectEntry,
   onBackToDiary,
   onLikeEntry,
-  onBookmarkEntry,
-  isBookmarked,
   isLiked,
   isParchmentMode,
   comments,
@@ -298,24 +294,6 @@ export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
               </button>
 
               <button
-                onClick={() => {
-                  if (!isAuthenticated) {
-                    setShowAuthWarning(true);
-                    return;
-                  }
-                  onBookmarkEntry(entry.id);
-                }}
-                className={`p-2.5 rounded-lg border transition-all text-xs ${
-                  isBookmarked
-                    ? 'bg-[#2b1e16] text-[#d4af37] border-[#d4af37]'
-                    : 'bg-[#1e1713] text-[#c5b8ab] border-[#3a2d24] hover:text-[#d4af37]'
-                }`}
-                title={isBookmarked ? 'Remove Bookmark' : 'Bookmark Entry'}
-              >
-                <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-[#d4af37]' : ''}`} />
-              </button>
-
-              <button
                 onClick={handleCopyLink}
                 className="p-2.5 rounded-lg bg-[#1e1713] text-[#c5b8ab] border border-[#3a2d24] hover:text-[#d4af37] transition-all text-xs flex items-center space-x-1"
                 title="Share or copy link"
@@ -346,7 +324,7 @@ export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
         <div className="my-10 p-6 rounded-2xl bg-[#18120e] border border-[#3a2a1e] flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
           <div>
             <h4 className="font-serif-title text-base font-bold text-[#f3efe6]">Did this entry resonate with you?</h4>
-            <p className="text-xs text-[#a3978c] mt-0.5">Leave a like or bookmark this page to return later in your reading journey.</p>
+            <p className="text-xs text-[#a3978c] mt-0.5">Leave a like on this entry to show it resonated with you.</p>
           </div>
 
           <div className="flex items-center space-x-3">

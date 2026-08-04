@@ -21,7 +21,6 @@ export async function initDB() {
         avatar TEXT,
         role VARCHAR(20) DEFAULT 'Reader',
         following_author BOOLEAN DEFAULT true,
-        bookmarks TEXT[] DEFAULT '{}',
         liked_entries TEXT[] DEFAULT '{}',
         reading_streak INT DEFAULT 1,
         last_read_date VARCHAR(100),

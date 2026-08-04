@@ -8,7 +8,6 @@ const userSchema = new mongoose.Schema({
   email: { type: String },
   avatar: { type: String, default: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80' },
   followingAuthor: { type: Boolean, default: true },
-  bookmarks: [{ type: String }],
   likedEntries: [{ type: String }],
   readHistory: [{ type: String }],
   lastActiveDate: { type: String }
