@@ -362,5 +362,136 @@ Someone, somewhere, will always ask,
     slug: 'when-the-alphabet-started-playing-hide-and-seek',
     isPinned: false,
     isFeatured: false
+  },
+  {
+    id: 'entry-codebook-part-3',
+    diaryId: 'diary-the-code-book',
+    sectionId: 'sec-ciphers',
+    entryNumber: 'Entry 003',
+    title: 'Every Letter Leaves a Footprint',
+    subtitle: 'My Thoughts After Reading the Next Part of Chapter 1 of The Code Book',
+    publishedDate: 'August 5, 2026',
+    updatedDate: 'August 5, 2026',
+    readingTime: '6 min read',
+    tags: ['Cryptography', 'History', 'Book Summary'],
+    coverImage: '/every_letter_footprint.png',
+    previewParagraph: '"I used to think breaking a secret meant being lucky. These pages quietly convinced me that it\'s actually about noticing what everyone else ignores."',
+    content: `> "I used to think breaking a secret meant being lucky. These pages quietly convinced me that it's actually about noticing what everyone else ignores."
+
+When I reached this part of The Code Book, I honestly thought the author was finally going to throw me into pages filled with impossible puzzles and mathematical headaches.
+
+Instead...
+he handed me a mystery.
+And then calmly said,
+> "Let's solve it together."
+
+That simple decision completely changed the way I experienced these pages.
+
+One thing I loved was that the author didn't just tell me what frequency analysis is he actually let me watch it happen. Reading the encrypted paragraph for the first time, I had exactly one thought:
+"Yeah... good luck with that."
+It looked like someone had challenged the alphabet to hide from humanity forever.
+
+Then the chapter slowly reminded me that even the best disguise leaves tiny clues behind.
+
+That was my first big realization.
+The cryptanalyst doesn't begin by guessing.
+The cryptanalyst begins by observing.
+
+That difference stayed with me.
+
+Instead of attacking the entire puzzle at once, the author patiently breaks it into smaller questions. Which letters appear most often? Which letters like to sit next to almost everyone? Which ones seem surprisingly antisocial? It almost felt as if every letter had its own personality.
+
+I actually laughed thinking,
+"So the alphabet has social habits now?"
+
+Surprisingly...
+it does.
+And those habits become clues.
+
+One explanation I genuinely enjoyed was how the author compared vowels and consonants through their behavior instead of simply defining them. Some letters naturally appear beside many others, while some are much more selective. I had never looked at language that way before. After reading those pages, I caught myself wondering if every paragraph I've ever written secretly contains patterns I never noticed.
+
+Another moment that impressed me was how much progress came from something incredibly small.
+One-letter words.
+
+That's it.
+A tiny clue.
+
+Yet it became one of the keys that unlocked the larger puzzle.
+It reminded me that intelligence isn't always about finding the biggest answer.
+Sometimes...
+it's about asking the smallest question.
+
+As more clues appeared, the encrypted message slowly stopped looking like random symbols and started looking like a conversation waiting to be understood. I loved that feeling because the chapter never made cryptanalysis seem like magic. Every breakthrough felt earned. Every new letter was another piece of a puzzle carefully falling into place.
+
+One sentence from this section quietly changed my perspective.
+The author explains that successful cryptanalysis isn't built only on logic. It also requires intuition, flexibility, and educated guesswork.
+
+I actually appreciated that.
+Sometimes books accidentally make intelligence look effortless.
+This one didn't.
+
+It reminded me that even experts occasionally begin with,
+"I think this might fit..."
+before proving that they're right.
+That felt surprisingly human.
+
+The chapter then zooms out from one puzzle to the bigger story behind it. I enjoyed learning that the growth of scholarship during the Islamic Golden Age created the perfect environment for cryptanalysis to flourish. Reading about libraries, translation, mathematics, language, and careful observation working together reminded me that great discoveries rarely happen inside a single subject. They happen when different fields start talking to each other.
+
+Out of everyone introduced in these pages, Al-Kindi fascinated me the most.
+Not because he had access to extraordinary technology.
+But because he trusted observation.
+
+While others might have seen an impossible cipher, he saw patterns hiding in plain sight. His explanation of frequency analysis made me realize that sometimes solving a difficult problem isn't about working harder it's about looking differently.
+
+I smiled when that idea finally clicked.
+Everyone else looked at thousands of strange symbols.
+Al-Kindi looked at how often they appeared…
+
+Same message.
+Completely different way of thinking.
+
+The author also does something I really respect.
+He doesn't pretend frequency analysis is perfect.
+He openly explains that shorter or unusual texts can behave differently, making the method much harder to apply. I liked that honesty because it reminded me that even brilliant techniques have limitations. Good ideas become even more believable when someone is willing to admit where they don't always work.
+
+As the chapter moved into the Renaissance, another thought stayed with me.
+Knowledge doesn't stay in one place forever.
+Ideas travel.
+They evolve.
+They inspire someone else.
+
+Reading about European cryptographers and cryptanalysts made me realize that the battle between protecting secrets and uncovering them had become bigger than any one civilization. It had become a shared human challenge.
+
+I also found the discussion about codes, ciphers, and nomenclators surprisingly useful. Before this chapter, I honestly used the words "code" and "cipher" as if they meant exactly the same thing. The author patiently explained the difference, and suddenly a distinction I had ignored for years finally made sense. Those are the moments I enjoy most while reading—when something I thought I understood quietly becomes much clearer.
+
+One detail that made me smile was the idea of adding nulls symbols that mean absolutely nothing just to confuse anyone trying to crack the message.
+Imagine spending hours solving a puzzle...
+only to discover someone secretly added extra pieces that belong to a different box.
+
+That level of mischief deserves some respect.
+
+By the end of this section, I realized I wasn't reading a book about encryption anymore.
+I was reading a story about curiosity.
+
+Every stronger cipher inspired a smarter cryptanalyst.
+Every successful cryptanalyst forced someone to invent a better cipher.
+Neither side stayed ahead forever.
+They simply pushed each other to think harder.
+
+And honestly...
+that might be my favorite lesson from these pages.
+
+I began this reading expecting to learn how people protected secrets.
+I finished it realizing something much bigger.
+A secret isn't defeated by strength alone.
+
+> Sometimes it's defeated by someone patient enough to notice the smallest pattern everyone else overlooked.
+
+That thought made me close the book for a moment.
+Not because I was finished reading.
+But because I wanted to appreciate just how powerful careful observation can be.`,
+    slug: 'every-letter-leaves-a-footprint',
+    isPinned: false,
+    isFeatured: false
   }
 ];
