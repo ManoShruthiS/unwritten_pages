@@ -14,8 +14,6 @@ const entrySchema = new mongoose.Schema({
   coverImage: String,
   previewParagraph: String,
   content: String,
-  likes: { type: Number, default: 0 },
-  commentsCount: { type: Number, default: 0 },
   isPinned: { type: Boolean, default: false },
   isFeatured: { type: Boolean, default: false },
   slug: String

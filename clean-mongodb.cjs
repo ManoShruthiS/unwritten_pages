@@ -18,22 +18,6 @@ async function cleanMongoDB() {
 
     const db = mongoose.connection.db;
 
-    // Drop users collection if exists
-    try {
-      await db.collection('users').drop();
-      console.log('🧹 Dropped "users" collection from MongoDB.');
-    } catch (e) {
-      console.log('ℹ️ "users" collection was already clean/empty.');
-    }
-
-    // Drop comments collection if exists
-    try {
-      await db.collection('comments').drop();
-      console.log('🧹 Dropped "comments" collection from MongoDB.');
-    } catch (e) {
-      console.log('ℹ️ "comments" collection was already clean/empty.');
-    }
-
     console.log('✨ MongoDB Database cleaned successfully! Only "diaries" and "entries" remain.');
     process.exit(0);
   } catch (err) {

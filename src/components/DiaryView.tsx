@@ -21,7 +21,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
   onBackToLibrary
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortOption, setSortOption] = useState<'newest' | 'oldest' | 'popular' | 'commented'>('newest');
+  const [sortOption, setSortOption] = useState<'newest' | 'oldest'>('newest');
   // Calculate cumulative reading time string
   const totalReadingMinutes = entries.reduce((acc, curr) => {
     const mins = parseInt(curr.readingTime) || 5;
@@ -42,10 +42,6 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
       if (sortOption === 'oldest') {
         return new Date(a.publishedDate).getTime() - new Date(b.publishedDate).getTime();
       }
-      if (sortOption === 'popular') {
-        return b.likes - a.likes;
-      }
-
       // Newest
       return new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime();
     });
@@ -150,7 +146,7 @@ export const DiaryView: React.FC<DiaryViewProps> = ({
             <span>Sort:</span>
           </span>
 
-          {(['newest', 'oldest', 'popular'] as const).map(option => (
+          {(['newest', 'oldest'] as const).map(option => (
             <button
               key={option}
               onClick={() => setSortOption(option)}

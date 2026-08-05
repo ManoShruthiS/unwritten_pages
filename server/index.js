@@ -61,8 +61,7 @@ async function connectToDatabase() {
         coverImage: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80',
         previewParagraph: 'An introduction to "The Code Book"—tracing humanity’s age-old battle between code makers and code breakers.',
         content: `# The Evolution of Secret Writing\n\n> "History is shaped by secret messages sent, intercepted, and deciphered."\n\n### Key Takeaways:\n- **Steganography vs. Cryptography**: Hiding a message in plain sight versus scrambling its contents.\n- **Monoalphabetic Ciphers**: How frequency analysis cracks simple substitution ciphers.\n- **The Golden Rule**: Security depends on the secrecy of the key, not the algorithm.\n\n*Ready for your chapter summaries and key takeaways!*`,
-        likes: 1,
-        commentsCount: 0,
+        
         slug: 'evolution-of-secret-writing',
         isPinned: true,
         isFeatured: true
@@ -100,26 +99,6 @@ const PORT = process.env.PORT || 5000;
 const Diary = require('../api/models/Diary');
 const Entry = require('../api/models/Entry');
 
-const crypto = require('crypto');
-const PASSCODE_HASH = '62f4d89dd319a4e7788a88a37913e1295e46b25ba49d6741be302ff6fe0b6baf';
-
-function isPasscodeValid(code) {
-  if (!code) return false;
-  const hash = crypto.createHash('sha256').update(String(code).trim()).digest('hex');
-  return hash === PASSCODE_HASH;
-}
-
-// --- AUTHOR AUTH CHECK ROUTE ---
-app.post('/api/auth/verify-author', async (req, res) => {
-  try {
-    await connectToDatabase();
-    const { code } = req.body;
-    if (isPasscodeValid(code)) {
-      return res.json({
-        id: 'author-mahi',
-        name: 'Mahi 🦢',
-        role: 'Admin'
-      });
     }
     return res.status(401).json({ error: 'Incorrect Passcode' });
   } catch (err) {
@@ -131,39 +110,10 @@ app.post('/api/auth/verify-author', async (req, res) => {
 app.post('/api/admin/clean-db', async (req, res) => {
   try {
     await connectToDatabase();
-    const { code } = req.body;
-    if (!isPasscodeValid(code)) {
-      return res.status(403).json({ error: 'Unauthorized.' });
-    }
-
-    // Explicitly target unwrittenpages database from client connection
-    const client = mongoose.connection.client;
-    const targetDb = client ? client.db('unwrittenpages') : mongoose.connection.db;
-
-    let droppedUsers = false;
-    let droppedComments = false;
-
-    if (targetDb) {
-      try {
-        await targetDb.collection('users').drop();
-        droppedUsers = true;
-      } catch (e) {
-        console.log('Drop users error:', e.message);
-      }
-
-      try {
-        await targetDb.collection('comments').drop();
-        droppedComments = true;
-      } catch (e) {
-        console.log('Drop comments error:', e.message);
-      }
-    }
 
     res.json({
       success: true,
-      message: 'MongoDB database cleaned.',
-      droppedUsers,
-      droppedComments
+      message: 'MongoDB database cleaned.'
     });
   } catch (err) {
     console.error('Clean DB Error:', err);
@@ -175,10 +125,7 @@ app.post('/api/admin/clean-db', async (req, res) => {
 app.post('/api/admin/seed-db', async (req, res) => {
   try {
     await connectToDatabase();
-    const { code } = req.body;
-    if (!isPasscodeValid(code)) {
-      return res.status(403).json({ error: 'Unauthorized.' });
-    }
+    
 
     const codeBookDiary = {
       id: 'diary-the-code-book',
@@ -213,8 +160,7 @@ app.post('/api/admin/seed-db', async (req, res) => {
       coverImage: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80',
       previewParagraph: 'An introduction to "The Code Book"—tracing humanity’s age-old battle between code makers and code breakers.',
       content: `# The Evolution of Secret Writing\n\n> "History is shaped by secret messages sent, intercepted, and deciphered."\n\n### Key Takeaways:\n- **Steganography vs. Cryptography**: Hiding a message in plain sight versus scrambling its contents.\n- **Monoalphabetic Ciphers**: How frequency analysis cracks simple substitution ciphers.\n- **The Golden Rule**: Security depends on the secrecy of the key, not the algorithm.\n\n*Ready for your chapter summaries and key takeaways!*`,
-      likes: 1,
-      commentsCount: 0,
+      
       slug: 'evolution-of-secret-writing',
       isPinned: true,
       isFeatured: true
@@ -322,12 +268,6 @@ app.delete('/api/entries/:id', async (req, res) => {
   }
 });
 
-// Like Entry Endpoint
-app.post('/api/entries/:id/like', async (req, res) => {
-  try {
-    await connectToDatabase();
-    const entryId = req.params.id;
-    const entry = await Entry.findOneAndUpdate({ id: entryId }, { $inc: { likes: 1 } }, { new: true });
     res.json({ entryLikes: entry ? entry.likes : 0 });
   } catch (err) {
     res.status(500).json({ error: 'Failed to like entry.' });

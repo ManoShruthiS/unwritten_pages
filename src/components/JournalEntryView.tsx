@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import confetti from 'canvas-confetti';
-import { JournalEntry, Diary, Comment } from '../types';
+import { JournalEntry, Diary } from '../types';
 import { 
-  ArrowLeft, Clock, Calendar, Heart, Share2, 
-  Check, MessageSquare, Send, ThumbsUp, ShieldAlert, Sparkles, 
-  ChevronLeft, ChevronRight, User, Feather, CornerDownRight, Copy, Terminal, Lock
+  ArrowLeft, Clock, Calendar, Share2, 
+  ChevronLeft, ChevronRight, Sparkles, Copy, Terminal
 } from 'lucide-react';
 
 interface JournalEntryViewProps {
@@ -15,9 +13,6 @@ interface JournalEntryViewProps {
   isParchmentMode: boolean;
   onSelectEntry: (entry: JournalEntry) => void;
   onBackToDiary: () => void;
-  onLikeEntry: (entryId: string) => void;
-  isLiked?: boolean;
-  isAuthenticated: boolean;
 }
 
 export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
@@ -26,24 +21,10 @@ export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
   allEntries,
   onSelectEntry,
   onBackToDiary,
-  onLikeEntry,
-  isLiked = false,
   isParchmentMode,
-  isAuthenticated
 }) => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [newComment, setNewComment] = useState('');
-  const [showAuthWarning, setShowAuthWarning] = useState(false);
-
-  const [hasLiked, setHasLiked] = useState(isLiked);
-  const [likesCount, setLikesCount] = useState(entry.likes);
-
-  // Sync likes count on entry change
-  useEffect(() => {
-    setLikesCount(entry.likes);
-    setHasLiked(isLiked);
-  }, [entry.id, entry.likes, isLiked]);
 
   // Track reading scroll progress
   useEffect(() => {
@@ -57,26 +38,6 @@ export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  // Handle Like Entry
-  const handleLikeClick = () => {
-    if (!isAuthenticated) {
-      setShowAuthWarning(true);
-      return;
-    }
-    
-    if (!hasLiked) {
-      setHasLiked(true);
-      setLikesCount(prev => prev + 1);
-      onLikeEntry(entry.id);
-      confetti({
-        particleCount: 40,
-        spread: 60,
-        origin: { y: 0.8 },
-        colors: ['#d4af37', '#e5c158', '#10b981']
-      });
-    }
-  };
 
   // Handle Share / Copy Link
   const handleCopyLink = () => {
@@ -360,32 +321,7 @@ export const JournalEntryView: React.FC<JournalEntryViewProps> = ({
 
       </article>
 
-      {/* Auth Warning Modal */}
-      {showAuthWarning && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <motion.div 
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-[#18120e] border border-[#d4af37]/40 rounded-xl max-w-sm w-full p-6 text-center shadow-2xl relative"
-          >
-            <div className="w-16 h-16 rounded-full bg-[#d4af37]/10 flex items-center justify-center mx-auto mb-4 border border-[#d4af37]/20">
-              <User className="w-8 h-8 text-[#d4af37]" />
-            </div>
-            <h3 className="font-cinzel text-xl font-bold text-[#f3efe6] mb-2">Authentication Required</h3>
-            <p className="text-[#a3978c] text-sm mb-6">
-              You have not logged in yet. Please log in to like this entry or leave a comment so we can display your name properly!
-            </p>
-            <div className="flex justify-center">
-              <button 
-                onClick={() => setShowAuthWarning(false)}
-                className="px-6 py-2 bg-[#d4af37] text-black font-cinzel font-bold text-sm rounded hover:bg-[#e5c158] transition-colors"
-              >
-                Understood
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
+
 
     </div>
   );

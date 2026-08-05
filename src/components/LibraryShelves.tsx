@@ -7,8 +7,6 @@ import { BookOpen, Search, Star, Plus } from 'lucide-react';
 interface LibraryShelvesProps {
   diaries: Diary[];
   onSelectDiary: (diary: Diary) => void;
-  onOpenAdmin?: () => void;
-  canManage?: boolean;
 }
 
 // Map string icon names to Lucide icon components dynamically
@@ -23,8 +21,6 @@ export const renderDiaryIcon = (iconName: string, className = "w-5 h-5") => {
 export const LibraryShelves: React.FC<LibraryShelvesProps> = ({
   diaries,
   onSelectDiary,
-  onOpenAdmin,
-  canManage = false,
 }) => {
   const [filterQuery, setFilterQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'pinned'>('all');
@@ -85,16 +81,7 @@ export const LibraryShelves: React.FC<LibraryShelvesProps> = ({
 
           </div>
 
-          {canManage && (
-            <button
-              onClick={onOpenAdmin}
-              className="p-1.5 bg-[#2a1e17] border border-[#d4af37]/40 hover:border-[#d4af37] text-[#d4af37] rounded-lg text-xs font-sans-body flex items-center space-x-1 transition-all"
-              title="Create a new Diary in Sanctuary"
-            >
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">New Diary</span>
-            </button>
-          )}
+
 
         </div>
       </div>

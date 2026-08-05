@@ -3,22 +3,14 @@ import { Search, Feather, LogOut, ChevronDown } from 'lucide-react';
 
 interface HeaderProps {
   onNavigate: (view: 'landing' | 'library' | 'about') => void;
-  onAdminNavigate?: (page: string) => void;
   onOpenSearch: () => void;
-  onSignOut: () => void;
-  isAuthor: boolean;
   currentView: string;
-  adminActivePage?: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   onNavigate,
-  onAdminNavigate,
   onOpenSearch,
-  onSignOut,
-  isAuthor,
   currentView,
-  adminActivePage
 }) => {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const navRef = useRef<HTMLDivElement>(null);
@@ -77,74 +69,22 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Center: Nav Links */}
       <nav ref={navRef} className="flex items-center gap-6 sm:gap-8">
-        {isAuthor ? (
-          // Admin Dropdown Navigation
-          <div className="flex items-center gap-6">
-            <button
-              onClick={() => onNavigate('landing')}
-              className={`text-sm font-sans transition-colors relative ${
-                currentView === 'landing'
-                  ? 'text-[#f3efe6] font-semibold after:content-[""] after:absolute after:bottom-[-4px] after:left-0 after:right-0 after:h-[1px] after:bg-[#d4af37]'
-                  : 'text-[#8c8075] hover:text-[#c5b8ab]'
-              }`}
-            >
-              Home
-            </button>
-            {adminNavGroups.map((group) => (
-              <div key={group.label} className="relative">
-                <button
-                  onClick={() => setOpenDropdown(openDropdown === group.label ? null : group.label)}
-                  className={`flex items-center gap-1 text-sm font-sans transition-colors ${
-                    openDropdown === group.label || (currentView === 'admin' && group.items.some(i => i.page === adminActivePage))
-                      ? 'text-[#f3efe6]'
-                      : 'text-[#8c8075] hover:text-[#c5b8ab]'
-                  }`}
-                >
-                  {group.label}
-                  <ChevronDown className="w-3 h-3" />
-                </button>
-                {openDropdown === group.label && (
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-40 bg-[#16120f] border border-[#2d1f14] rounded-lg shadow-xl overflow-hidden py-1 z-50">
-                    {group.items.map((item) => (
-                      <button
-                        key={item.page}
-                        onClick={() => {
-                          if (onAdminNavigate) onAdminNavigate(item.page);
-                          setOpenDropdown(null);
-                        }}
-                        className={`w-full text-left px-4 py-2 text-sm transition-colors ${
-                          currentView === 'admin' && adminActivePage === item.page
-                            ? 'bg-[#2a1f18] text-[#d4af37]'
-                            : 'text-[#8c8075] hover:bg-[#201712] hover:text-[#f3efe6]'
-                        }`}
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          // Standard Visitor Navigation
-          standardNavItems.map(item => (
-            <button
-              key={item.view}
-              onClick={() => onNavigate(item.view)}
-              className={`text-sm font-sans transition-colors relative ${
-                currentView === item.view
-                  ? 'text-[#f3efe6] font-semibold after:content-[""] after:absolute after:bottom-[-4px] after:left-0 after:right-0 after:h-[1px] after:bg-[#d4af37]'
-                  : 'text-[#8c8075] hover:text-[#c5b8ab]'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))
-        )}
+        {standardNavItems.map(item => (
+          <button
+            key={item.view}
+            onClick={() => onNavigate(item.view)}
+            className={`text-sm font-sans transition-colors relative ${
+              currentView === item.view
+                ? 'text-[#f3efe6] font-semibold after:content-[""] after:absolute after:bottom-[-4px] after:left-0 after:right-0 after:h-[1px] after:bg-[#d4af37]'
+                : 'text-[#8c8075] hover:text-[#c5b8ab]'
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
       </nav>
 
-      {/* Right: Search + Author Sign Out */}
+      {/* Right: Search */}
       <div className="flex items-center gap-4 sm:gap-5 flex-shrink-0">
         <button
           onClick={onOpenSearch}
@@ -153,20 +93,6 @@ export const Header: React.FC<HeaderProps> = ({
           <Search className="w-4 h-4" />
           <span className="hidden sm:inline">Search</span>
         </button>
-
-        {isAuthor && (
-          <>
-            <div className="w-px h-4 bg-[#3d2b1e]" />
-            <button
-              onClick={onSignOut}
-              className="flex items-center gap-1.5 text-[#8c8075] hover:text-[#c0533a] transition-colors text-sm font-sans cursor-pointer"
-              title="Sign Out Author"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Sign Out</span>
-            </button>
-          </>
-        )}
       </div>
     </header>
   );
