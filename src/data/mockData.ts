@@ -190,129 +190,175 @@ It's going to teach me why humans have never stopped trying to protect them…`,
     readingTime: '5 min read',
     tags: ['Cryptography', 'History', 'Book Summary'],
     coverImage: '/alphabet_hide_seek.png',
-    previewParagraph: '"I thought the difficult part of cryptography would be understanding it. Turns out, the difficult part was underestimating how creative humans have always been."',
-    content: `"I thought the difficult part of cryptography would be understanding it. Turns out, the difficult part was underestimating how creative humans have always been."
+    previewParagraph: '"The more I read this book, the more I realized that history wasn\'t just fought with swords. Sometimes... it was fought with letters."',
+    content: `> "The more I read this book, the more I realized that history wasn't just fought with swords. Sometimes... it was fought with letters."
 
-If the first part of the chapter answered "Why do we need cryptography?", this part quietly answered a different question:
-"How did people actually protect their secrets?"
+When I started this part of the chapter, I thought I was finally entering the "technical zone." I was mentally preparing myself for difficult terms, confusing examples, and at least three moments where I'd stare at the page pretending I understood everything.
+
+Surprisingly...
+Simon Singh had other plans.
+
+Instead of making cryptography feel complicated, he made me feel like I was watching thousands of years of human creativity unfold one idea at a time.
+
+The first thing that caught my attention was that cryptography isn't just one magical trick. The author introduces two different ways of protecting a message: transposition and substitution.
+
+At first, the word transposition sounded intimidating. Then the explanation made me smile. The letters themselves don't change at all they simply change places.
+
+My brain immediately imagined the alphabet playing musical chairs.
+Same people.
+Different seats.
+Suddenly, nobody understands what's going on.
+
+That tiny idea amazed me because it proved that sometimes you don't need to create something new to confuse people. Sometimes changing the arrangement is enough.
+
+But the author also points out something I hadn't thought about. If you completely scramble every letter randomly, even the person who is supposed to read the message won't know how to put it back together. That made me realize that a secret isn't useful unless the right person can actually understand it. 
+
+> A clever system isn't just about hiding information it's about making sure the intended receiver can recover it.
+
+The Rail Fence Cipher made this even easier for me to picture. Instead of throwing letters everywhere, they followed a simple pattern that both the sender and receiver already knew. Reading that example reminded me that cryptography has always depended on trust and agreement as much as intelligence.
+
+Then came one of my favourite historical moments.
+The Spartan Scytale.
+
+I'll be honest...
+When I first read about soldiers wrapping a strip of leather around a wooden staff to hide a message, I stopped for a second.
+
+Thousands of years ago...
+No laptops.
+No encryption software.
+Just a wooden stick and a brilliant idea.
+
+History really looked at a piece of wood and said,
+> "Congratulations. You're now a military security device."
+
+And somehow...
+It worked.
+
+That made me appreciate something this chapter quietly keeps teaching me: technology changes, but human creativity doesn't.
+
+Just when I thought I understood how secrets were protected, the author introduced another completely different idea—substitution.
+
+Unlike transposition, where letters simply move around, substitution gives every letter a new identity. The message stays in the same order, but each character wears a disguise.
+
+I actually liked how clearly the author compared these two ideas…
+One changes position…
+The other changes identity…
+
+That simple comparison stayed in my mind much better than any definition could have.
+
+The historical examples made this even more enjoyable. Somehow, that made the subject feel alive instead of technical. It reminded me that protecting information wasn't limited to one civilization or one purpose. Different societies solved the same problem in surprisingly creative ways.
+
+The Caesar Cipher was probably the easiest concept for me to visualize. Shifting every letter a fixed number of places sounds almost too simple today, yet it was clever enough to protect military communication in its time.
+
+It also introduced two words that I had seen before but never truly understood.
+Plaintext.
+Ciphertext.
+
+The author explains them so naturally that they finally clicked.
+Plaintext is simply the original message before encryption.
+Ciphertext is the secret version after encryption.
+
+Sometimes all we need is someone to explain things without trying to sound complicated.
+
+Then came two words that used to confuse me every single time:
+Algorithm and Key.
+
+For the longest time, they sounded almost identical in my head.
+This chapter finally separated them.
+
+The algorithm is the overall method the set of rules used to encrypt a message.
+The key is the specific secret that tells you exactly how to use that method.
+
+The comparison that formed in my mind was simple.
+> The algorithm is the recipe…
+> The key is the secret ingredient…
+
+Anyone can own the cookbook.
+Without the secret ingredient...
+Good luck making the same dish.
+
+That tiny realization made these technical words much easier to remember.
+
+Then the chapter introduced one of the most interesting ideas so far
+Kerckhoffs' Principle.
+
+I'll admit...
+My first reaction was,
+"Wait... shouldn't we keep the whole system secret?"
+
+But the author's explanation completely changed my thinking.
+A strong cryptographic system shouldn't depend on hiding the method itself.
+It should remain secure even if everyone knows how it works.
+The only thing that truly needs to stay secret is the key.
+
+The more I thought about it, the more brilliant it sounded.
+If your security collapses the moment someone understands the system...
+Maybe the system wasn't truly secure in the first place.
+
+Another thing these pages made me appreciate was the importance of having many possible keys. The author compares systems with only a few possible keys to those with unimaginably large numbers of possible keys, making it clear why attackers can't simply try every possibility. I found myself staring at those enormous numbers thinking,
+> "My calculator just resigned from the job."
+
+The discussion about using a keyword or keyphrase also made me smile. Instead of memorizing an entire scrambled alphabet, people could remember a meaningful word or phrase to build it. Such a small idea, yet incredibly practical. Sometimes convenience is part of good design.
+
+Just when I thought the chapter had finished teaching me about creating ciphers, it took an unexpected turn.
+
+It introduced the people who wanted to break them.
+The Arab Cryptanalysts.
+
+This was probably my favourite section because it reminded me that every great invention eventually inspires someone curious enough to challenge it.
+
+The chapter describes how the growth of knowledge, libraries, scholarship, and careful study during the Islamic Golden Age created the perfect environment for a new science: cryptanalysis.
+
+I loved that this breakthrough didn't happen because of luck.
+It happened because people kept learning.
+Mathematics, Language, Statistics, History.
+Everything came together.
+That was genuinely inspiring.
+
+Then came Al-Kindi.
+Out of all the names in these pages, his stood out the most for me.
+
+While everyone else looked at encrypted messages as impossible puzzles, Al-Kindi looked at language itself.
+His idea became known as frequency analysis, and honestly, I thought it sounded far more complicated than it actually was.
+
+The explanation surprised me because it relied on a very simple observation:
+Some letters naturally appear more often than others.
+
+Instead of trying billions of possible keys one by one, Al-Kindi realized that studying how often symbols appeared could reveal hidden patterns.
+
+I actually laughed when I reached this part.
+Everyone else:
+"This cipher is impossible!"
+Al-Kindi:
+"Let's count the letters first."
+
+Sometimes genius isn't about making things more complicated.
+Sometimes it's about noticing what everyone else ignores.
+
+The author also honestly explains that frequency analysis isn't perfect. It works much better with longer pieces of text because they follow normal language patterns more closely. Very short or unusual texts can break those patterns, making the method much less reliable. I appreciated that balance it wasn't presented as magic, but as a powerful tool with strengths and limitations.
+
+By the end of these pages, I realized something I hadn't expected.
+
+I wasn't simply reading about ciphers anymore.
+I was watching a battle between two kinds of minds.
+
+One side kept inventing stronger ways to protect secrets.
+The other kept inventing smarter ways to uncover them.
+
+Neither side ever truly wins.
+They simply make each other better.
 
 And honestly...
-I wasn't expecting history to be this clever.
+That's exactly why I couldn't stop turning the pages.
 
-Before reading these pages, I assumed ancient encryption would be something primitive almost like people randomly replacing letters and hoping for the best.
+I started this section expecting to learn a few encryption techniques.
+I finished it with a much bigger lesson.
 
-The book politely proved me wrong.
+Human curiosity is impossible to encrypt.
 
-One thing I really appreciated was that the author didn't throw difficult terminology at me without a purpose. Every new term felt like another tool added to the same toolbox. Instead of memorizing definitions, I found myself asking,
-"Why did people invent this method?"
-
-Once I started thinking that way, the concepts became much easier to understand.
-
-The first idea that stayed with me was transposition.
-The name sounded complicated at first, but the explanation made it surprisingly simple.
-Instead of changing the letters themselves, the letters are simply rearranged into a different order.
-
-That tiny idea made me smile.
-Imagine writing a perfectly normal sentence...
-and then deciding,
-"Let's shuffle everything and watch people panic."
-
-Same letters.
-Same message.
-Completely different appearance.
-
-I loved how the author showed that sometimes protecting information isn't about adding complexity.
-Sometimes...
-it's simply about changing perspective.
-
-Then came another realization.
-Different civilizations weren't trying to invent the "best" encryption.
-They were experimenting.
-Trying.
-Improving.
-Learning.
-
-That made cryptography feel less like a finished invention and more like centuries of human trial and error.
-Reading this reminded me that innovation rarely appears overnight.
-It usually grows one clever idea at a time.
-
-Another concept that finally clicked for me was the difference between an algorithm and a key.
-I'll be honest...
-Those two words always sounded almost identical in my head.
-But after reading this section, I started seeing them differently.
-
-I pictured the algorithm as the recipe.
-The key is the secret ingredient.
-
-Anyone can know the recipe.
-Without the right ingredient...
-the final dish still won't taste the same.
-
-That simple comparison made the concept much easier for me to remember.
-
-Then I reached one idea that genuinely surprised me.
-The author discusses the principle that a secure system shouldn't depend on hiding how it works.
-Instead...
-its security should depend on protecting only the secret key.
-
-I actually paused there.
-Because my first instinct was,
-"Wouldn't hiding everything be safer?"
-
-But the more I thought about it, the more the author's reasoning made sense.
-A truly strong system shouldn't collapse simply because people understand how it works.
-That perspective completely changed the way I think about security.
-
-Another thing these pages quietly taught me was something beyond cryptography.
-Humans are incredibly predictable.
-Give us a puzzle...
-and someone will eventually try to solve it.
-Create a lock...
-and someone will eventually try every possible key.
-
-That ongoing competition between protecting information and breaking protection is what makes the history of cryptography feel so alive.
-Nobody ever says,
-"We've solved it forever."
-Someone, somewhere, is already asking,
-"Can it be broken?"
-And I found that strangely exciting.
-
-I also loved that the chapter never made me feel like I needed to be a computer scientist to understand these ideas.
-Every important concept was introduced step by step.
-Instead of overwhelming me with technical language, the author built my understanding gradually.
-
-As a reader, I genuinely appreciated that.
-It felt less like attending a lecture...
-and more like having a conversation with someone who enjoys explaining difficult ideas in simple ways.
-
-By the end of this reading session, I realized something I hadn't expected.
-Cryptography isn't just about protecting information.
-It's about human imagination.
-
-One person invents a clever method.
-Another person spends years trying to defeat it.
-That cycle repeats again...
-and again...
-and somehow, every generation leaves behind a smarter idea than the previous one.
-
-I think that's what fascinated me most.
-Not the techniques themselves.
-The people behind them.
-Their curiosity.
-Their persistence.
-Their refusal to stop asking,
-"Can we make this even better?"
-
-If the first part of Chapter 1 made me appreciate why people needed cryptography, this part made me appreciate how they kept improving it through creativity, patience, and relentless curiosity.
-
-And just when I started thinking,
-"These methods sound almost impossible to defeat..."
-the chapter quietly hinted that someone eventually found a way.
-
-That single hint was enough to make me want to turn the next page.
-Because sometimes...
-the most interesting part of a lock isn't how it is built.
-It's discovering who finally learns how to open it…`,
+Because no matter how strong the lock becomes...
+Someone, somewhere, will always ask,
+> "There has to be a way to open it."`,
     slug: 'when-the-alphabet-started-playing-hide-and-seek',
     isPinned: false,
     isFeatured: false
