@@ -189,7 +189,7 @@ It's going to teach me why humans have never stopped trying to protect them…`,
     updatedDate: 'August 5, 2026',
     readingTime: '5 min read',
     tags: ['Cryptography', 'History', 'Book Summary'],
-    coverImage: '/queen_cipher_codebook.png',
+    coverImage: '/alphabet_hide_seek.png',
     previewParagraph: '"I thought the difficult part of cryptography would be understanding it. Turns out, the difficult part was underestimating how creative humans have always been."',
     content: `"I thought the difficult part of cryptography would be understanding it. Turns out, the difficult part was underestimating how creative humans have always been."
 
