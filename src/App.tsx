@@ -12,7 +12,7 @@ import { AboutView } from './components/AboutView';
 import { Feather, X } from 'lucide-react';
 
 import { Diary, JournalEntry, NotificationItem } from './types';
-import { API_URL } from './config';
+import { INITIAL_DIARIES, INITIAL_ENTRIES } from './data/mockData';
 
 export default function App() {
   // Navigation & View State
@@ -20,42 +20,8 @@ export default function App() {
   const [selectedDiary, setSelectedDiary] = useState<Diary | null>(null);
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
 
-  // Data Stores with LocalStorage Fallback (Works 100% Offline & Mobile)
-  const [diaries, setDiaries] = useState<Diary[]>(() => {
-    try {
-      const saved = localStorage.getItem('unwritten_diaries');
-      const parsed = saved ? JSON.parse(saved) : [];
-      const combined: Diary[] = [];
-
-      // Merge stored diaries only if they have unique titles
-      if (Array.isArray(parsed)) {
-        parsed.forEach((d: Diary) => {
-          if (d.title && !combined.some(c => c.title.toLowerCase().trim() === d.title.toLowerCase().trim())) {
-            combined.push(d);
-          }
-        });
-      }
-      return combined;
-    } catch {
-      return [];
-    }
-  });
-
-  const [entries, setEntries] = useState<JournalEntry[]>(() => {
-    try {
-      const saved = localStorage.getItem('unwritten_entries');
-      const parsed = saved ? JSON.parse(saved) : [];
-      const combined: JournalEntry[] = [];
-      if (Array.isArray(parsed)) {
-        parsed.forEach((e: JournalEntry) => {
-          if (!combined.some(c => c.id === e.id)) combined.push(e);
-        });
-      }
-      return combined;
-    } catch {
-      return [];
-    }
-  });
+  const [diaries, setDiaries] = useState<Diary[]>(INITIAL_DIARIES);
+  const [entries, setEntries] = useState<JournalEntry[]>(INITIAL_ENTRIES);
 
   const [isParchmentMode, setIsParchmentMode] = useState(false);
 
@@ -67,65 +33,7 @@ export default function App() {
   const [isRssOpen, setIsRssOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
 
-  // Persist Diaries & Entries
-  useEffect(() => {
-    try {
-      localStorage.setItem('unwritten_diaries', JSON.stringify(diaries));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [diaries]);
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('unwritten_entries', JSON.stringify(entries));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [entries]);
-
-  // Silent Background API Sync on Mount (Synchronizes MongoDB with all devices)
-  useEffect(() => {
-    fetch(`${API_URL || ''}/api/diaries`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-          setDiaries(prev => {
-            const combined = [...prev];
-            data.forEach((d: Diary) => {
-              const idx = combined.findIndex(c => c.id === d.id || c.title.toLowerCase().trim() === d.title.toLowerCase().trim());
-              if (idx >= 0) {
-                combined[idx] = { ...combined[idx], ...d };
-              } else {
-                combined.push(d);
-              }
-            });
-            return combined;
-          });
-        }
-      })
-      .catch(() => {/* Silent catch */});
-
-    fetch(`${API_URL || ''}/api/entries`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-          setEntries(prev => {
-            const combined = [...prev];
-            data.forEach((e: JournalEntry) => {
-              const idx = combined.findIndex(c => c.id === e.id);
-              if (idx >= 0) {
-                combined[idx] = { ...combined[idx], ...e };
-              } else {
-                combined.push(e);
-              }
-            });
-            return combined;
-          });
-        }
-      })
-      .catch(() => {/* Silent catch */});
-  }, []);
 
   // Keyboard shortcut for Search (Cmd+K) and Secret Admin Access (Ctrl+Shift+A)
   useEffect(() => {
