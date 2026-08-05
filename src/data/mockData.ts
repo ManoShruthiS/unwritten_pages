@@ -177,5 +177,144 @@ It's going to teach me why humans have never stopped trying to protect them…`,
     slug: 'the-queen-who-trusted-a-cipher',
     isPinned: true,
     isFeatured: true
+  },
+  {
+    id: 'entry-codebook-part-2',
+    diaryId: 'diary-the-code-book',
+    sectionId: 'sec-ciphers',
+    entryNumber: 'Entry 002',
+    title: 'When the Alphabet Started Playing Hide and Seek',
+    subtitle: 'My Thoughts After Reading the Next Part of Chapter 1 of The Code Book',
+    publishedDate: 'August 5, 2026',
+    updatedDate: 'August 5, 2026',
+    readingTime: '5 min read',
+    tags: ['Cryptography', 'History', 'Book Summary'],
+    coverImage: '/queen_cipher_codebook.png',
+    previewParagraph: '"I thought the difficult part of cryptography would be understanding it. Turns out, the difficult part was underestimating how creative humans have always been."',
+    content: `"I thought the difficult part of cryptography would be understanding it. Turns out, the difficult part was underestimating how creative humans have always been."
+
+If the first part of the chapter answered "Why do we need cryptography?", this part quietly answered a different question:
+"How did people actually protect their secrets?"
+
+And honestly...
+I wasn't expecting history to be this clever.
+
+Before reading these pages, I assumed ancient encryption would be something primitive almost like people randomly replacing letters and hoping for the best.
+
+The book politely proved me wrong.
+
+One thing I really appreciated was that the author didn't throw difficult terminology at me without a purpose. Every new term felt like another tool added to the same toolbox. Instead of memorizing definitions, I found myself asking,
+"Why did people invent this method?"
+
+Once I started thinking that way, the concepts became much easier to understand.
+
+The first idea that stayed with me was transposition.
+The name sounded complicated at first, but the explanation made it surprisingly simple.
+Instead of changing the letters themselves, the letters are simply rearranged into a different order.
+
+That tiny idea made me smile.
+Imagine writing a perfectly normal sentence...
+and then deciding,
+"Let's shuffle everything and watch people panic."
+
+Same letters.
+Same message.
+Completely different appearance.
+
+I loved how the author showed that sometimes protecting information isn't about adding complexity.
+Sometimes...
+it's simply about changing perspective.
+
+Then came another realization.
+Different civilizations weren't trying to invent the "best" encryption.
+They were experimenting.
+Trying.
+Improving.
+Learning.
+
+That made cryptography feel less like a finished invention and more like centuries of human trial and error.
+Reading this reminded me that innovation rarely appears overnight.
+It usually grows one clever idea at a time.
+
+Another concept that finally clicked for me was the difference between an algorithm and a key.
+I'll be honest...
+Those two words always sounded almost identical in my head.
+But after reading this section, I started seeing them differently.
+
+I pictured the algorithm as the recipe.
+The key is the secret ingredient.
+
+Anyone can know the recipe.
+Without the right ingredient...
+the final dish still won't taste the same.
+
+That simple comparison made the concept much easier for me to remember.
+
+Then I reached one idea that genuinely surprised me.
+The author discusses the principle that a secure system shouldn't depend on hiding how it works.
+Instead...
+its security should depend on protecting only the secret key.
+
+I actually paused there.
+Because my first instinct was,
+"Wouldn't hiding everything be safer?"
+
+But the more I thought about it, the more the author's reasoning made sense.
+A truly strong system shouldn't collapse simply because people understand how it works.
+That perspective completely changed the way I think about security.
+
+Another thing these pages quietly taught me was something beyond cryptography.
+Humans are incredibly predictable.
+Give us a puzzle...
+and someone will eventually try to solve it.
+Create a lock...
+and someone will eventually try every possible key.
+
+That ongoing competition between protecting information and breaking protection is what makes the history of cryptography feel so alive.
+Nobody ever says,
+"We've solved it forever."
+Someone, somewhere, is already asking,
+"Can it be broken?"
+And I found that strangely exciting.
+
+I also loved that the chapter never made me feel like I needed to be a computer scientist to understand these ideas.
+Every important concept was introduced step by step.
+Instead of overwhelming me with technical language, the author built my understanding gradually.
+
+As a reader, I genuinely appreciated that.
+It felt less like attending a lecture...
+and more like having a conversation with someone who enjoys explaining difficult ideas in simple ways.
+
+By the end of this reading session, I realized something I hadn't expected.
+Cryptography isn't just about protecting information.
+It's about human imagination.
+
+One person invents a clever method.
+Another person spends years trying to defeat it.
+That cycle repeats again...
+and again...
+and somehow, every generation leaves behind a smarter idea than the previous one.
+
+I think that's what fascinated me most.
+Not the techniques themselves.
+The people behind them.
+Their curiosity.
+Their persistence.
+Their refusal to stop asking,
+"Can we make this even better?"
+
+If the first part of Chapter 1 made me appreciate why people needed cryptography, this part made me appreciate how they kept improving it through creativity, patience, and relentless curiosity.
+
+And just when I started thinking,
+"These methods sound almost impossible to defeat..."
+the chapter quietly hinted that someone eventually found a way.
+
+That single hint was enough to make me want to turn the next page.
+Because sometimes...
+the most interesting part of a lock isn't how it is built.
+It's discovering who finally learns how to open it…`,
+    slug: 'when-the-alphabet-started-playing-hide-and-seek',
+    isPinned: false,
+    isFeatured: false
   }
 ];
