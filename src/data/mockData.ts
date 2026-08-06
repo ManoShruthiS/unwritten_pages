@@ -493,5 +493,147 @@ But because I wanted to appreciate just how powerful careful observation can be.
     slug: 'every-letter-leaves-a-footprint',
     isPinned: false,
     isFeatured: false
+  },
+  {
+    id: 'entry-codebook-part-4',
+    diaryId: 'diary-the-code-book',
+    sectionId: 'sec-ciphers',
+    entryNumber: 'Entry 004',
+    title: "When a Cipher Decided a Queen's Fate",
+    subtitle: 'My Thoughts After Finishing Chapter 1 of The Code Book',
+    publishedDate: 'August 6, 2026',
+    updatedDate: 'August 6, 2026',
+    readingTime: '6 min read',
+    tags: ['Cryptography', 'History', 'Book Summary'],
+    coverImage: '/queen_fate.png',
+    previewParagraph: '"I thought cryptography was about hiding messages. These pages reminded me that sometimes it decides who lives, who dies, and how history remembers them."',
+    content: `> "I thought cryptography was about hiding messages. These pages reminded me that sometimes it decides who lives, who dies, and how history remembers them."
+
+By the time I reached the final pages of this chapter, I realized I wasn't reading a technology book anymore.
+I was reading a political thriller.
+
+Except...
+every shocking twist had actually happened.
+
+One thing I admired throughout this section was how Simon Singh never rushed the story. Instead of throwing historical names at me, he patiently built the world around Mary Queen of Scots. By the time the real conspiracy arrived, I already understood why every letter, every messenger, and every secret mattered.
+
+It made me realize something interesting.
+> A message isn't dangerous because it's written.
+> It's dangerous because of who reads it.
+
+That idea stayed with me until the last page.
+
+One part that fascinated me was seeing how cryptography had grown far beyond kings sending secret battle plans. Diplomats, ambassadors, governments, religious groups, and even prisoners depended on secure communication. Suddenly, encryption wasn't just a clever trick anymore it had become part of politics itself.
+
+I also couldn't stop thinking about Mary.
+Her life felt like a reminder that history doesn't always move because of battles. Sometimes it changes because of decisions, alliances, trust, and timing. Reading about everything she went through, I almost forgot I was holding a book about cryptography.
+
+Then the story quietly brought me back.
+Every road eventually led to one thing.
+A hidden message…
+
+When the Babington Plot entered the chapter, the pace completely changed. It felt less like history and more like watching someone carefully arrange dominoes, knowing that touching one piece would eventually bring everything down.
+
+At that point, I found myself thinking,
+"Please... don't put your entire future inside one letter."
+
+History had other plans…
+
+One concept I genuinely enjoyed learning was the nomenclator.
+Before reading this chapter, I thought there were only codes and ciphers. Then the author introduced something that combined both ideas into one system. It felt like watching someone say,
+"Why choose one security system...
+when you can use two?"
+
+I liked that explanation because it showed that cryptography wasn't standing still. Every weakness inspired another improvement. Every stronger defense forced someone else to become even smarter.
+
+That's probably the biggest pattern I noticed throughout the entire chapter.
+Nobody stayed ahead forever.
+
+Codemakers improved.
+Codebreakers adapted.
+Then codemakers improved again.
+
+It was like watching two people play chess for centuries without either side ever giving up.
+One person builds a better lock.
+The other quietly starts learning lock-picking.
+Repeat.
+
+Another person who completely surprised me was Gilbert Gifford.
+I honestly wasn't expecting someone whose greatest weapon wasn't strength, wealth, or power...
+but trust.
+
+The way he moved between different groups reminded me that information often travels because people believe the wrong person. Reading about spies made me realize that the hardest security problem isn't always mathematics.
+
+> Sometimes... it's people.
+
+Then came Thomas Phelippes.
+Earlier in the chapter, I had already respected him for his ability to read hidden messages.
+These pages made me appreciate something else.
+His patience.
+
+He didn't simply rush to solve one cipher and stop. He analyzed, questioned, waited, and even noticed opportunities that other people would probably have ignored. The chapter quietly reminded me that intelligence isn't only about solving problems quickly.
+Sometimes it's about knowing when not to stop looking.
+
+One thing I really appreciated was that the author never portrayed cryptography as magic.
+Every successful codebreaking attempt depended on observation, logic, language, and careful thinking.
+
+No superpowers.
+No impossible genius moments.
+Just patient reasoning.
+
+As someone who's still learning this field, I found that encouraging.
+
+The ending of this chapter hit me much harder than I expected.
+After spending so many pages learning about ciphers, substitution, frequency analysis, algorithms, and secret communication, everything suddenly became deeply personal.
+
+A queen.
+A trial.
+A judgment.
+An execution.
+
+It reminded me that cryptography has never been only about mathematics.
+It's about people.
+Their choices.
+Their trust.
+Their mistakes.
+And sometimes...
+their last hope.
+
+One detail that stayed with me was realizing how a single intercepted message could influence the future more than an entire army.
+
+Honestly...
+that's terrifying.
+
+Imagine spending years building alliances, planning carefully, protecting secrets...
+only for one message to undo everything.
+Makes forgetting to reply to a WhatsApp message feel slightly less stressful.
+Almost.
+
+By the time I finished Chapter 1, I realized Simon Singh had quietly achieved something very difficult.
+He never made me feel like I was studying.
+He made me feel curious.
+
+Every historical story naturally introduced another cryptographic idea.
+Every technical concept immediately found a place in real history.
+Instead of memorizing definitions, I found myself remembering people.
+
+And because I remembered the people...
+I remembered the concepts too.
+
+That's probably my favorite thing about this chapter.
+It teaches cryptography the way history happened.
+
+Not as formulas.
+Not as isolated inventions.
+But as a continuous conversation between people trying to protect information...
+and people determined to uncover it.
+
+I closed the chapter with one thought repeating in my mind.
+
+> History is often written by kings and queens.
+> But sometimes... it's quietly rewritten by the person who manages to read one hidden message.`,
+    slug: 'when-a-cipher-decided-a-queens-fate',
+    isPinned: false,
+    isFeatured: false
   }
 ];
